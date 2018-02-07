@@ -1,0 +1,2 @@
+<?php echo $header; ?><link type="text/css" rel="stylesheet" media="all" href="chat/css/chat.css" /><div class="e_commerce container_inner_page">      <div class="container">       <?php echo $column_left; ?>    	<div class="col-lg-6 col-sm-6 col-xs-12">  		<div class="ecommercr_cat">			<?php echo $content_top; ?>		</div> 	 </div>        <?php echo $column_right; ?>     </div><?php echo $content_bottom; ?>    
+<?php echo $footer; ?>
