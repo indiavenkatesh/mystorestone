@@ -1,13 +1,13 @@
 <?php
 // HTTP
-define('HTTP_SERVER', 'http://preview.ixly.in/mystorestone/');
+define('HTTP_SERVER', 'http://localhost/mystorestone/');
 
-define('HTTP_CATALOG', 'http://preview.ixly.in/mystorestone/');
+define('HTTP_CATALOG', 'http://localhost/mystorestone/');
 
 // HTTPS
-define('HTTPS_SERVER', 'http://preview.ixly.in/mystorestone/');
+define('HTTPS_SERVER', 'http://localhost/mystorestone/');
 
-define('HTTPS_CATALOG', 'http://preview.ixly.in/mystorestone/');
+define('HTTPS_CATALOG', 'http://localhost/mystorestone/');
 
 // DIR
 define('DIR_APPLICATION', '../mystorestone/catalog/');
