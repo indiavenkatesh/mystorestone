@@ -1,0 +1,863 @@
+From 81992a3b2afef001054370fbd611ef5985f68d6e Mon Sep 17 00:00:00 2001
+From: Venkatesh <venki88.php@gmail.com>
+Date: Fri, 9 Feb 2018 04:13:40 +0530
+Subject: [PATCH] Fixed in 07022018
+
+---
+ .gitignore                                         |  8 ++++
+ catalog/controller/account/login.php               | 49 ++++++++++++++-----
+ catalog/controller/common/header.php               |  3 ++
+ catalog/controller/simple_blog/article.php         |  2 +-
+ catalog/language/en-gb/information/contact.php     |  2 +-
+ catalog/model/simple_blog/groups.php               |  2 +-
+ .../default/template/account/seller_login.tpl      | 55 +++++++++++++++++++++
+ .../theme/default/template/checkout/checkout.tpl   | 20 ++++----
+ .../mystonestore/ChatJs/css/jquery.chatjs.css      |  2 +-
+ catalog/view/theme/mystonestore/css/style.css      |  5 +-
+ .../mystonestore/template/account/seller_login.tpl | 56 ++++++++++++++++++++++
+ .../mystonestore/template/checkout/checkout.tpl    | 20 ++++----
+ .../theme/mystonestore/template/common/footer.tpl  |  4 +-
+ .../theme/mystonestore/template/common/header.tpl  |  4 +-
+ .../mystonestore/template/common/socialfooter.tpl  |  4 +-
+ .../mystonestore/template/module/featured.tpl      | 21 +++++---
+ .../mystonestore/template/product/category.tpl     | 35 +++++++++-----
+ chat/js/catgchat.js                                |  6 ++-
+ chat/js/chat.js                                    |  2 +-
+ .../admin/view/template/common/header.tpl          |  6 +--
+ .../admin/view/template/common/menu.tpl            |  4 +-
+ .../catalog/controller/common/header.php           |  2 +
+ .../mystonestore/template/account/account.tpl      |  4 +-
+ .../theme/mystonestore/template/module/account.tpl |  6 +--
+ 24 files changed, 246 insertions(+), 76 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 catalog/view/theme/default/template/account/seller_login.tpl
+ create mode 100644 catalog/view/theme/mystonestore/template/account/seller_login.tpl
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..328b352
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,8 @@
++system/storage/cache
++image/cache
++system/storage/logs
++
++
++#System Files
++.DS_Store
++Thumbs.db
+diff --git a/catalog/controller/account/login.php b/catalog/controller/account/login.php
+index c8b1b5f..77fad50 100644
+--- a/catalog/controller/account/login.php
++++ b/catalog/controller/account/login.php
+@@ -1,6 +1,12 @@
+ <?php
+ class ControllerAccountLogin extends Controller {
+ 	private $error = array();
++	private $type = '';
++	
++	public function seller() {
++		$this->type = 'seller';
++		$this->index();
++	}
+ 
+ 	public function index() {
+ 		$this->load->model('account/customer');
+@@ -113,19 +119,30 @@ class ControllerAccountLogin extends Controller {
+ 			'text' => $this->language->get('text_account'),
+ 			'href' => $this->url->link('account/account', '', true)
+ 		);
+-
+-		$data['breadcrumbs'][] = array(
+-			'text' => $this->language->get('text_login'),
+-			'href' => $this->url->link('account/login', '', true)
+-		);
++		if($this->type == 'seller') {
++			$data['breadcrumbs'][] = array(
++				'text' => $this->language->get('text_login'),
++				'href' => $this->url->link('account/login/seller', '', true)
++			);
++		} else {
++			$data['breadcrumbs'][] = array(
++				'text' => $this->language->get('text_login'),
++				'href' => $this->url->link('account/login', '', true)
++			);
++		}
+ 
+ 		$data['heading_title'] = $this->language->get('heading_title');
+-
+-		$data['text_new_customer'] = $this->language->get('text_new_customer');
++		if($this->type == 'seller') {
++			$data['text_new_customer'] = 'New Member';
++			$data['text_returning_customer'] = 'Existing Member';
++			$data['text_i_am_returning_customer'] = 'I am a existing member';
++		} else {
++			$data['text_new_customer'] = $this->language->get('text_new_customer');
++			$data['text_returning_customer'] = $this->language->get('text_returning_customer');
++			$data['text_i_am_returning_customer'] = $this->language->get('text_i_am_returning_customer');
++		}
+ 		$data['text_register'] = $this->language->get('text_register');
+ 		$data['text_register_account'] = $this->language->get('text_register_account');
+-		$data['text_returning_customer'] = $this->language->get('text_returning_customer');
+-		$data['text_i_am_returning_customer'] = $this->language->get('text_i_am_returning_customer');
+ 		$data['text_forgotten'] = $this->language->get('text_forgotten');
+ 
+ 		$data['entry_email'] = $this->language->get('entry_email');
+@@ -147,8 +164,11 @@ class ControllerAccountLogin extends Controller {
+ 		} else {
+ 			$data['error_warning'] = '';
+ 		}
+-
+-		$data['action'] = $this->url->link('account/login', '', true);
++		if($this->type == 'seller') {
++			$data['action'] = $this->url->link('account/login', '', true);
++		} else {
++			$data['action'] = $this->url->link('account/login', '', true);
++		}
+ 		$data['register'] = $this->url->link('account/register', '', true);
+ 		$data['sellerregister'] = $this->url->link('account/sellerregister', '', true);
+ 		$data['forgotten'] = $this->url->link('account/forgotten', '', true);
+@@ -190,8 +210,11 @@ class ControllerAccountLogin extends Controller {
+ 		$data['content_bottom'] = $this->load->controller('common/content_bottom');
+ 		$data['footer'] = $this->load->controller('common/footer');
+ 		$data['header'] = $this->load->controller('common/header');
+-
+-		$this->response->setOutput($this->load->view('account/login', $data));
++		if($this->type == 'seller') {
++			$this->response->setOutput($this->load->view('account/seller_login', $data));
++		} else {
++			$this->response->setOutput($this->load->view('account/login', $data));
++		}
+ 	}
+ 
+ 	protected function validate() {
+diff --git a/catalog/controller/common/header.php b/catalog/controller/common/header.php
+index 62ae111..933e6ed 100644
+--- a/catalog/controller/common/header.php
++++ b/catalog/controller/common/header.php
+@@ -87,7 +87,9 @@ class ControllerCommonHeader extends Controller {
+ 		$data['telephone'] = $this->config->get('config_telephone');
+ 		$data['logged'] = $this->customer->isLogged();
+ 		$data['seller_social_site'] = '';
++		$data['customer_name'] = '';
+     if (!$this->customer->isLogged()) {
++		
+     $data['wishlist'] = $this->url->link('account/wishlist', '', true);
+ 		$data['account'] = $this->url->link('account/account', '', true);
+ 		$data['register'] = $this->url->link('account/register', '', true);
+@@ -97,6 +99,7 @@ class ControllerCommonHeader extends Controller {
+ 		$data['download'] = $this->url->link('account/download', '', true);
+ 		
+     } else {
++		$data['customer_name'] = $this->customer->getFirstName() . ' ' . $this->customer->getLastName();
+     $data['wishlist'] = $this->url->link('account/wishlist', 'token=' . $this->session->data['token'], true);
+ 		$data['account'] = $this->url->link('account/account', 'token=' . $this->session->data['token'], true);
+ 		$data['register'] = $this->url->link('account/register', 'token=' . $this->session->data['token'], true);
+diff --git a/catalog/controller/simple_blog/article.php b/catalog/controller/simple_blog/article.php
+index 8d55aec..faad958 100644
+--- a/catalog/controller/simple_blog/article.php
++++ b/catalog/controller/simple_blog/article.php
+@@ -5,7 +5,7 @@
+ 			if (!$this->customer->isLogged()) {
+ 				$this->session->data['redirect'] = $this->url->link('simple_blog/article', '', true);
+ 
+-				$this->response->redirect($this->url->link('account/login', '', true));
++				$this->response->redirect($this->url->link('account/login/seller', '', true));
+ 			}
+ 			$this->language->load('simple_blog/article');
+ 
+diff --git a/catalog/language/en-gb/information/contact.php b/catalog/language/en-gb/information/contact.php
+index ca93e35..9126182 100644
+--- a/catalog/language/en-gb/information/contact.php
++++ b/catalog/language/en-gb/information/contact.php
+@@ -11,7 +11,7 @@ $_['text_telephone'] = 'Telephone';
+ $_['text_fax']       = 'Fax';
+ $_['text_open']      = 'Opening Times';
+ $_['text_comment']   = 'Comments';
+-$_['text_success']   = '<p>Your enquiry has been successfully sent to the store owner!</p>';
++$_['text_success']   = '<p>Your enquiry has been successfully sent to My Stone Store!</p>';
+ 
+ // Entry
+ $_['entry_name']     = 'Your Name';
+diff --git a/catalog/model/simple_blog/groups.php b/catalog/model/simple_blog/groups.php
+index b3f6bb4..7f6065d 100644
+--- a/catalog/model/simple_blog/groups.php
++++ b/catalog/model/simple_blog/groups.php
+@@ -45,7 +45,7 @@
+ 		}
+ 		
+ 		public function getGroupusers($social_group_id) {
+-			$query = $this->db->query("SELECT gu.*,c.firstname as username  FROM `" . DB_PREFIX . "social_group_users` as gu  JOIN `" . DB_PREFIX . "customer` as c ON gu.social_group_user_id=c.customer_id WHERE gu.social_group_id = '" . (int)$social_group_id . "'");
++			$query = $this->db->query("SELECT gu.*,CONCAT(c.firstname, ' ', c.lastname) as username  FROM `" . DB_PREFIX . "social_group_users` as gu  JOIN `" . DB_PREFIX . "customer` as c ON gu.social_group_user_id=c.customer_id WHERE gu.social_group_id = '" . (int)$social_group_id . "'");
+ 			return $query->rows;
+ 		}
+ 		
+diff --git a/catalog/view/theme/default/template/account/seller_login.tpl b/catalog/view/theme/default/template/account/seller_login.tpl
+new file mode 100644
+index 0000000..7b4d15e
+--- /dev/null
++++ b/catalog/view/theme/default/template/account/seller_login.tpl
+@@ -0,0 +1,55 @@
++<?php echo $header; ?>
++<div class="container">
++  <ul class="breadcrumb">
++    <?php foreach ($breadcrumbs as $breadcrumb) { ?>
++    <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
++    <?php } ?>
++  </ul>
++  <?php if ($success) { ?>
++  <div class="alert alert-success"><i class="fa fa-check-circle"></i> <?php echo $success; ?></div>
++  <?php } ?>
++  <?php if ($error_warning) { ?>
++  <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $error_warning; ?></div>
++  <?php } ?>
++  <div class="row"><?php echo $column_left; ?>
++    <?php if ($column_left && $column_right) { ?>
++    <?php $class = 'col-sm-6'; ?>
++    <?php } elseif ($column_left || $column_right) { ?>
++    <?php $class = 'col-sm-9'; ?>
++    <?php } else { ?>
++    <?php $class = 'col-sm-12'; ?>
++    <?php } ?>
++    <div id="content" class="<?php echo $class; ?>"><?php echo $content_top; ?>
++      <div class="row">
++        <div class="col-sm-6">
++          <div class="well">
++            <h2><?php echo $text_new_customer; ?></h2>
++            <p><strong><?php echo $text_register; ?></strong></p>
++            <p><?php echo $text_register_account; ?></p>
++            <a href="<?php echo $register; ?>" class="btn btn-primary"><?php echo $button_continue; ?></a></div>
++        </div>
++        <div class="col-sm-6">
++          <div class="well">
++            <h2><?php echo $text_returning_customer; ?></h2>
++            <p><strong><?php echo $text_i_am_returning_customer; ?></strong></p>
++            <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data">
++              <div class="form-group">
++                <label class="control-label" for="input-email"><?php echo $entry_email; ?></label>
++                <input type="text" name="email" value="<?php echo $email; ?>" placeholder="<?php echo $entry_email; ?>" id="input-email" class="form-control" />
++              </div>
++              <div class="form-group">
++                <label class="control-label" for="input-password"><?php echo $entry_password; ?></label>
++                <input type="password" name="password" value="<?php echo $password; ?>" placeholder="<?php echo $entry_password; ?>" id="input-password" class="form-control" />
++                <a href="<?php echo $forgotten; ?>"><?php echo $text_forgotten; ?></a></div>
++              <input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary" />
++              <?php if ($redirect) { ?>
++              <input type="hidden" name="redirect" value="<?php echo $redirect; ?>" />
++              <?php } ?>
++            </form>
++          </div>
++        </div>
++      </div>
++      <?php echo $content_bottom; ?></div>
++    <?php echo $column_right; ?></div>
++</div>
++<?php echo $footer; ?>
+\ No newline at end of file
+diff --git a/catalog/view/theme/default/template/checkout/checkout.tpl b/catalog/view/theme/default/template/checkout/checkout.tpl
+index c6022c9..75a2e36 100644
+--- a/catalog/view/theme/default/template/checkout/checkout.tpl
++++ b/catalog/view/theme/default/template/checkout/checkout.tpl
+@@ -280,7 +280,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -302,7 +302,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -322,7 +322,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -405,7 +405,7 @@ $(document).delegate('#button-payment-address', 'click', function() {
+ 						$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -500,7 +500,7 @@ $(document).delegate('#button-shipping-address', 'click', function() {
+ 
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+ 
+@@ -606,7 +606,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -631,7 +631,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -654,7 +654,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -721,7 +721,7 @@ $(document).delegate('#button-guest-shipping', 'click', function() {
+ 
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -771,7 +771,7 @@ $(document).delegate('#button-shipping-method', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+diff --git a/catalog/view/theme/mystonestore/ChatJs/css/jquery.chatjs.css b/catalog/view/theme/mystonestore/ChatJs/css/jquery.chatjs.css
+index b545ad3..e12bf1b 100644
+--- a/catalog/view/theme/mystonestore/ChatJs/css/jquery.chatjs.css
++++ b/catalog/view/theme/mystonestore/ChatJs/css/jquery.chatjs.css
+@@ -398,7 +398,7 @@ ul.horizontal-tab li.selected {
+     }
+ 
+ .tab-content {
+-    display: none;
++	padding: 10px 0;
+     overflow: hidden;
+ }
+ 
+diff --git a/catalog/view/theme/mystonestore/css/style.css b/catalog/view/theme/mystonestore/css/style.css
+index 9207f50..f2579bb 100644
+--- a/catalog/view/theme/mystonestore/css/style.css
++++ b/catalog/view/theme/mystonestore/css/style.css
+@@ -617,7 +617,10 @@
+   .tabs-menu li:hover { background-color: #961112;  color: #fff;}
+   .tabs-menu .current a { color: #fff;}
+   .tab { background-color: #fff; float: left; margin-bottom: 20px;}
+-  .tab-content { display: none; overflow: hidden;}
++  .tab-content {
++	padding: 10px 0;
++    overflow: hidden;
++}
+   #tab-1 {
+    display: block;   
+   }
+diff --git a/catalog/view/theme/mystonestore/template/account/seller_login.tpl b/catalog/view/theme/mystonestore/template/account/seller_login.tpl
+new file mode 100644
+index 0000000..a2f3437
+--- /dev/null
++++ b/catalog/view/theme/mystonestore/template/account/seller_login.tpl
+@@ -0,0 +1,56 @@
++<?php echo $header; ?>
++<div class="container">
++  <ul class="breadcrumb">
++    <?php foreach ($breadcrumbs as $breadcrumb) { ?>
++    <li><a href="<?php echo $breadcrumb['href']; ?>"><?php echo $breadcrumb['text']; ?></a></li>
++    <?php } ?>
++  </ul>
++  <?php if ($success) { ?>
++  <div class="alert alert-success"><i class="fa fa-check-circle"></i> <?php echo $success; ?></div>
++  <?php } ?>
++  <?php if ($error_warning) { ?>
++  <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo $error_warning; ?></div>
++  <?php } ?>
++  <div class="row"><?php echo $column_left; ?>
++    <?php if (!empty($column_left) && !empty($column_right)) { ?>
++    <?php $class = 'col-sm-6'; ?>
++    <?php } elseif ($column_left || $column_right) { ?>
++    <?php $class = 'col-sm-9'; ?>
++    <?php } else { ?>
++    <?php $class = 'col-sm-12'; ?>
++    <?php } ?>
++    <div id="content" class="<?php echo "col-sm-12"; ?>"><?php echo $content_top; ?>
++      <div class="row">
++        <div class="col-sm-6">
++          <div class="well">
++            <h2><?php echo $text_new_customer; ?></h2>
++            <p><strong><?php echo $text_register; ?></strong></p>
++            <p><?php echo $text_register_account; ?></p>
++            <a href="<?php echo $register; ?>" class="btn btn-primary"><?php echo "Register as Buyer"; ?></a>
++            <a href="<?php echo $sellerregister; ?>" class="btn btn-primary"><?php echo "Register as Seller"; ?></a></div>
++        </div>
++        <div class="col-sm-6">
++          <div class="well">
++            <h2><?php echo $text_returning_customer; ?></h2>
++            <p><strong><?php echo $text_i_am_returning_customer; ?></strong></p>
++            <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data">
++              <div class="form-group">
++                <label class="control-label" for="input-email"><?php echo $entry_email; ?></label>
++                <input type="text" name="email" value="<?php echo $email; ?>" placeholder="<?php echo $entry_email; ?>" id="input-email" class="form-control" />
++              </div>
++              <div class="form-group">
++                <label class="control-label" for="input-password"><?php echo $entry_password; ?></label>
++                <input type="password" name="password" value="<?php echo $password; ?>" placeholder="<?php echo $entry_password; ?>" id="input-password" class="form-control" />
++                <a href="<?php echo $forgotten; ?>"><?php echo $text_forgotten; ?></a></div>
++              <input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary" />
++              <?php if ($redirect) { ?>
++              <input type="hidden" name="redirect" value="<?php echo $redirect; ?>" />
++              <?php } ?>
++            </form>
++          </div>
++        </div>
++      </div>
++      <?php echo $content_bottom; ?></div>
++    <?php #echo $column_right; ?></div>
++</div>
++<?php echo $footer; ?>
+\ No newline at end of file
+diff --git a/catalog/view/theme/mystonestore/template/checkout/checkout.tpl b/catalog/view/theme/mystonestore/template/checkout/checkout.tpl
+index c6022c9..75a2e36 100644
+--- a/catalog/view/theme/mystonestore/template/checkout/checkout.tpl
++++ b/catalog/view/theme/mystonestore/template/checkout/checkout.tpl
+@@ -280,7 +280,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -302,7 +302,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -322,7 +322,7 @@ $(document).delegate('#button-register', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -405,7 +405,7 @@ $(document).delegate('#button-payment-address', 'click', function() {
+ 						$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -500,7 +500,7 @@ $(document).delegate('#button-shipping-address', 'click', function() {
+ 
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+ 
+@@ -606,7 +606,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -631,7 +631,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
+ 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+               
+-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+               
+ 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                         },
+@@ -654,7 +654,7 @@ $(document).delegate('#button-guest', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -721,7 +721,7 @@ $(document).delegate('#button-guest-shipping', 'click', function() {
+ 
+ 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+             
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+@@ -771,7 +771,7 @@ $(document).delegate('#button-shipping-method', 'click', function() {
+ 
+ 						$('a[href=\'#collapse-payment-method\']').trigger('click');
+             
+-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
++            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
+ 
+ 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
+                     },
+diff --git a/catalog/view/theme/mystonestore/template/common/footer.tpl b/catalog/view/theme/mystonestore/template/common/footer.tpl
+index 96d090b..f3a2b51 100644
+--- a/catalog/view/theme/mystonestore/template/common/footer.tpl
++++ b/catalog/view/theme/mystonestore/template/common/footer.tpl
+@@ -185,9 +185,9 @@
+ 
+ <?php if(isset($userid)) { ?>
+ <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
+-<div class="chatboxhead">
++<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth('friends')">
+ 	<div class="chatboxtitle">Members</div>
+-	<div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth('friends')">-</a> 
++	<div class="chatboxoptions"><a href="javascript:void(0)">-</a> 
+ 	</div>
+ 	<br clear="all">
+ </div>
+diff --git a/catalog/view/theme/mystonestore/template/common/header.tpl b/catalog/view/theme/mystonestore/template/common/header.tpl
+index d2e67f9..fbba73a 100644
+--- a/catalog/view/theme/mystonestore/template/common/header.tpl
++++ b/catalog/view/theme/mystonestore/template/common/header.tpl
+@@ -74,9 +74,9 @@
+ 			<?php } ?>
+ 			<?php if ($logged) { ?> 
+             <li class="dropdown">
+-                <a href="<?php echo $account; ?>" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $text_account; ?><span class="caret"></span></a>
++                <a href="<?php echo $account; ?>" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $customer_name; ?><span class="caret"></span></a>
+                 <ul class="dropdown-menu">
+-                    <li><a href="<?php echo $account; ?>">Settings <span class="glyphicon glyphicon-wrench" style="text-align: right; margin-left: 30px;"></span></a></li>
++                    <li><a href="<?php echo $account; ?>"><?php echo $text_account; ?> <span class="glyphicon glyphicon-wrench" style="text-align: right; margin-left: 30px;"></span></a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="<?php echo $logout; ?>"><?php echo $text_logout; ?> <span class="glyphicon glyphicon-log-out" style="text-align: right; margin-left: 30px;"></span></a></li>					
+                 </ul>
+diff --git a/catalog/view/theme/mystonestore/template/common/socialfooter.tpl b/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
+index 0c278ac..697ec80 100644
+--- a/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
++++ b/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
+@@ -184,9 +184,9 @@
+ 
+ </script><script>$(document).ready(function () {    $('#fadeandscale_three,#fadeandscale_four').popup({        pagecontainer: '.container',        transition: 'all 0.3s'    });});</script>
+ <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
+-<div class="chatboxhead">
++<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth('friends')">
+ 	<div class="chatboxtitle">Members</div>
+-	<div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth('friends')">-</a> 
++	<div class="chatboxoptions"><a href="javascript:void(0)">-</a> 
+ 	</div>
+ 	<br clear="all">
+ </div>
+diff --git a/catalog/view/theme/mystonestore/template/module/featured.tpl b/catalog/view/theme/mystonestore/template/module/featured.tpl
+index b3194d0..31c3542 100644
+--- a/catalog/view/theme/mystonestore/template/module/featured.tpl
++++ b/catalog/view/theme/mystonestore/template/module/featured.tpl
+@@ -5,10 +5,7 @@
+ 	<div class="e_product">  
+       <div class="e_product_images"> <a href="<?php echo $product['href']; ?>"><img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" /></a></div>
+       <div class="content_box">
+-        <div class="title_product">
+-            <h4 class="col-md-9"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+-		</div>			
+-        <p><?php echo $product['description']; ?></p>
++            <h4><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+ 		<div class="replay">
+ 		<h5 class="col-md-12">
+ 		<?php if ($product['price'] && $product['display_price']) { ?>
+@@ -22,10 +19,20 @@
+ 			 <?php }*/ ?>
+ 		<?php } ?>
+ 			</h5>
++			<div class="row">
++				<div class="col-xs-12">
++					<?php for ($i = 1; $i <= 5; $i++) { ?>
++					<?php if ($product['rating'] < $i) { ?>
++					<span class="fa fa-stack"><i class="fa fa-star-o fa-stack-1x"></i></span>
++					<?php } else { ?>
++					<span class="fa fa-stack"><i class="fa fa-star fa-stack-1x"></i><i class="fa fa-star-o fa-stack-1x"></i></span>
++					<?php } ?>
++					<?php } ?>
++				</div>
++			</div>
+ 			<div class="e_online">
+ 			<div class="col-md-7">
+ 			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
+-			<p>Updated : <?php echo $product['date_modified_diff'];?></p>
+ 			</div>
+ 
+ 
+@@ -34,11 +41,11 @@
+ 				<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
+ 			<?php } ?>
+ 			<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
+-			<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat</a>			
++			<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat</a>			
+ 			<?php } else { ?>
+ 				<!-- <a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open" href="<?php echo $product['reply_link']; ?>">Chat</a> -->
+ 
+-<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat</a>				
++<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat</a>				
+ 			<?php } ?>
+ 			</div>
+ 		</div>
+diff --git a/catalog/view/theme/mystonestore/template/product/category.tpl b/catalog/view/theme/mystonestore/template/product/category.tpl
+index 80ede95..470f6ff 100644
+--- a/catalog/view/theme/mystonestore/template/product/category.tpl
++++ b/catalog/view/theme/mystonestore/template/product/category.tpl
+@@ -1,10 +1,9 @@
+ <?php echo $header; ?>
+ <link type="text/css" rel="stylesheet" media="all" href="chat/css/chat.css" />
+ <div class="container">
+-<div id="tabs-container">
+-<div id="content" class="<?php echo $class; ?>"></div>
++<div id="tabs-container" style="padding: 0;">
+   <?php echo str_replace('<aside id="column-left" class="col-sm-3 hidden-xs">','<aside id="column-left" class="col-lg-3 col-sm-4 hidden-xs">',$column_left); ?>
+-  <div class="tab  col-lg-9 col-sm-8">     
++  <div class="tab  col-lg-9 col-sm-8" style="padding: 0;">     
+    <div id="tab-1" class="tab-content">			
+    <!--  <?php echo $content_top; ?>
+       <h2><?php echo $heading_title; ?></h2>
+@@ -48,12 +47,13 @@
+       <?php if ($products) { ?>
+       <div class="row">
+         <?php $online_seller_array = array(); foreach ($products as $product) { ?>	
+-		<div class="col-lg-6 col-sm-6 col-xs-12">    
+-		<img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" />
++		<div class="col-md-4 col-sm-6 col-xs-12">    
++		<a href="<?php echo $product['href']; ?>">
++		<img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" /></a>
+ 		<div class="content_box">                   
+ 		<div class="title_product">                 
+-		<h4 class="col-md-9"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4> 
+-		</div>                    <p><?php echo $product['description']; ?></p>               
++		<h4><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4> 
++		</div>                             
+ 		<div class="replay">					
+ 		<?php if ($product['price'] && $product['display_price']) { ?> 
+ 		<h5><?php echo $product['price']; ?></h5>		
+@@ -64,18 +64,27 @@
+ 		<div class="profile-status offline"></div> Offline	
+ 		</div>
+ 		<?php } */?>
++		<div class="row">
++			<div class="col-xs-12">
++				<?php for ($i = 1; $i <= 5; $i++) { ?>
++				<?php if ($product['rating'] < $i) { ?>
++				<span class="fa fa-stack"><i class="fa fa-star-o fa-stack-1x"></i></span>
++				<?php } else { ?>
++				<span class="fa fa-stack"><i class="fa fa-star fa-stack-1x"></i><i class="fa fa-star-o fa-stack-1x"></i></span>
++				<?php } ?>
++				<?php } ?>
++			</div>	
++		</div>
++		
+ 		<div class="e_online">
+-			<div class="col-md-12">
+-			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
+-			<p>Updated : <?php echo $product['date_modified_diff'];?></p>
+-			</div>
+-		</div>	
++		<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
++		</div>
+ 		<?php if(!empty($product['seller_details'])){ ?>
+ 			<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
+ 		<?php } ?>
+ 		<div class="buttons clearfix">	
+ 		<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
+-			<a class="more_button replay_button col-md-6 chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat with seller</a>			
++			<a class="more_button replay_button col-md-6 chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat with seller</a>			
+ 		<?php } else { ?>
+ 			<a class="more_button replay_button col-md-6 fadeandscale_four_open" href="<?php echo $product['reply_link']; ?>">Chat with seller</a>			
+ 		<?php } ?>
+diff --git a/chat/js/catgchat.js b/chat/js/catgchat.js
+index a5632f5..58712e6 100644
+--- a/chat/js/catgchat.js
++++ b/chat/js/catgchat.js
+@@ -30,6 +30,7 @@ var chatboxFocus = new Array();
+ var newMessages = new Array();
+ var newMessagesWin = new Array();
+ var chatBoxes = new Array();
++chatBoxes.push('friends');
+ 
+ $(document).ready(function(){
+ 	originalTitle = document.title;
+@@ -77,7 +78,7 @@ function createChatBox(chatboxtitle,chatboxusername,minimizeChatBox) {
+ 	}
+ 		$(" <div />" ).attr("id","chatbox_"+chatboxtitle)
+ 		.addClass("chatbox")
+-		.html('<div class="chatboxhead"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
++		.html('<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
+ 		.appendTo($( "body" ));
+ 				   
+ 		$("#chatbox_"+chatboxtitle).css('bottom', '0px');
+@@ -237,6 +238,9 @@ function chatHeartbeat(){
+ }
+ 
+ function closeChatBox(chatboxtitle) {
++	var e = window.event;
++    e.cancelBubble = true;
++    if (e.stopPropagation) e.stopPropagation();
+ 	$('#chatbox_'+chatboxtitle).css('display','none');
+ 	restructureChatBoxes();
+ 
+diff --git a/chat/js/chat.js b/chat/js/chat.js
+index d1d48a4..f533720 100644
+--- a/chat/js/chat.js
++++ b/chat/js/chat.js
+@@ -77,7 +77,7 @@ function createChatBox(chatboxtitle,chatboxusername,minimizeChatBox) {
+ 	}
+ 		$(" <div />" ).attr("id","chatbox_"+chatboxtitle)
+ 		.addClass("chatbox")
+-		.html('<div class="chatboxhead"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
++		.html('<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
+ 		.appendTo($( "body" ));
+ 				   
+ 		$("#chatbox_"+chatboxtitle).css('bottom', '0px');
+diff --git a/system/storage/modification/admin/view/template/common/header.tpl b/system/storage/modification/admin/view/template/common/header.tpl
+index 5449db2..89d1c7d 100644
+--- a/system/storage/modification/admin/view/template/common/header.tpl
++++ b/system/storage/modification/admin/view/template/common/header.tpl
+@@ -42,8 +42,8 @@
+     <a href="<?php echo $home; ?>" class="navbar-brand"><img src="view/image/logo.png" alt="<?php echo $heading_title; ?>" title="<?php echo $heading_title; ?>" /></a></div>
+   <?php if ($logged) { ?>
+   <ul class="nav pull-right">
+-
+-		<!-- /****** Message System Starts *****/ -->
++<?php /**
++		<!-- Message System Starts -->
+     <li>
+ 			<a href="<?php echo $link_message ?>" >
+ 				<?php if($alert_messages) { ?>
+@@ -52,7 +52,7 @@
+ 				<i class="fa fa-envelope fa-lg"></i>
+ 			</a>
+ 		</li>
+-		<!-- /****** Message System Ends *****/ -->
++		<!-- Message System Ends  --> **/ ?>
+ 		
+     <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"><span class="label label-danger pull-left"><?php echo $alerts; ?></span> <i class="fa fa-bell fa-lg"></i></a>
+       <ul class="dropdown-menu dropdown-menu-right alerts-dropdown">
+diff --git a/system/storage/modification/admin/view/template/common/menu.tpl b/system/storage/modification/admin/view/template/common/menu.tpl
+index cc93b22..3906794 100644
+--- a/system/storage/modification/admin/view/template/common/menu.tpl
++++ b/system/storage/modification/admin/view/template/common/menu.tpl
+@@ -1,13 +1,13 @@
+ <ul id="menu">
+   <li id="dashboard"><a href="<?php echo $home; ?>"><i class="fa fa-dashboard fa-fw"></i> <span><?php echo $text_dashboard; ?></span></a></li>
+ 
+-	<!-- /****** Message System Starts *****/ -->
++	<?php /** <!-- Message System Starts -->
+   <li id="message"><a class="parent"><i class="fa fa-envelope fa-fw"></i> <span><?php echo $text_message; ?></span></a>
+ 		<ul>
+ 			<li><a href="<?php echo $message; ?>"><?php echo $text_message; ?></a></li>
+ 		</ul>
+ 	</li>
+-	<!-- /****** Message System Ends *****/ -->
++	<!-- Message System Ends --> **/ ?>
+   <li id="catalog"><a class="parent"><i class="fa fa-tags fa-fw"></i> <span><?php echo $text_catalog; ?></span></a>
+     <ul>
+       <li><a href="<?php echo $category; ?>"><?php echo $text_category; ?></a></li>
+diff --git a/system/storage/modification/catalog/controller/common/header.php b/system/storage/modification/catalog/controller/common/header.php
+index 9cd92fd..1da6452 100644
+--- a/system/storage/modification/catalog/controller/common/header.php
++++ b/system/storage/modification/catalog/controller/common/header.php
+@@ -102,6 +102,7 @@ class ControllerCommonHeader extends Controller {
+ 		$data['telephone'] = $this->config->get('config_telephone');
+ 		$data['logged'] = $this->customer->isLogged();
+ 		$data['seller_social_site'] = '';
++		$data['customer_name'] = '';
+     if (!$this->customer->isLogged()) {
+     $data['wishlist'] = $this->url->link('account/wishlist', '', true);
+ 		$data['account'] = $this->url->link('account/account', '', true);
+@@ -111,6 +112,7 @@ class ControllerCommonHeader extends Controller {
+ 		$data['transaction'] = $this->url->link('account/transaction', '', true);
+ 		$data['download'] = $this->url->link('account/download', '', true);
+     } else {
++		$data['customer_name'] = $this->customer->getFirstName() . ' ' . $this->customer->getLastName();
+     $data['wishlist'] = $this->url->link('account/wishlist', 'token=' . $this->session->data['token'], true);
+ 		$data['account'] = $this->url->link('account/account', 'token=' . $this->session->data['token'], true);
+ 		$data['register'] = $this->url->link('account/register', 'token=' . $this->session->data['token'], true);
+diff --git a/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl b/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
+index e54b466..2d74676 100644
+--- a/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
++++ b/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
+@@ -43,7 +43,7 @@
+         <li><a href="<?php echo $transaction; ?>"><?php echo $text_transaction; ?></a></li>
+         <li><a href="<?php echo $recurring; ?>"><?php echo $text_recurring; ?></a></li>
+ 
+-				<!-- /****** Message System Starts *****/ -->
++			<?php /**	<!-- Message System Starts -->
+         <li><a href="<?php echo $message; ?>"><?php echo $text_message_system; ?>
+ 							<span class="alert_messages">
+ 								<?php if($alert_messages) { ?> 
+@@ -52,7 +52,7 @@
+ 							</span>
+ 						</a>
+ 				</li>
+-				<!-- /****** Message System Ends *****/ -->
++				<!--  Message System Ends --> **/?> 
+ 			
+       </ul>
+       <!-- -->
+diff --git a/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl b/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
+index 458ed77..2d50988 100644
+--- a/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
++++ b/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
+@@ -7,8 +7,8 @@
+   <a href="<?php echo $edit; ?>" class="list-group-item"><?php echo $text_edit; ?></a> <a href="<?php echo $password; ?>" class="list-group-item"><?php echo $text_password; ?></a>
+   <?php } ?>
+   <a href="<?php echo $address; ?>" class="list-group-item"><?php echo $text_address; ?></a> <a href="<?php echo $wishlist; ?>" class="list-group-item"><?php echo $text_wishlist; ?></a> <a href="<?php echo $order; ?>" class="list-group-item"><?php echo $text_order; ?></a> <a href="<?php echo $download; ?>" class="list-group-item"><?php echo $text_download; ?></a><a href="<?php echo $recurring; ?>" class="list-group-item"><?php echo $text_recurring; ?></a> <a href="<?php echo $reward; ?>" class="list-group-item"><?php echo $text_reward; ?></a> <a href="<?php echo $return; ?>" class="list-group-item"><?php echo $text_return; ?></a> <a href="<?php echo $transaction; ?>" class="list-group-item"><?php echo $text_transaction; ?></a> <a href="<?php echo $newsletter; ?>" class="list-group-item"><?php echo $text_newsletter; ?></a>
+-
+-		<!-- /****** Message System Starts *****/ -->
++<?php /**
++		<!-- Message System Starts -->
+ 		<a href="<?php echo $message; ?>" class="list-group-item"><?php echo $text_message_system; ?>
+ 			<span class="alert_messages">
+ 				<?php if($alert_messages) { ?> 
+@@ -16,7 +16,7 @@
+ 				<?php } ?>
+ 			</span>
+ 		</a>
+-		<!-- /****** Message System Ends *****/ -->
++		<!-- Message System Ends --> **/ ?>
+ 		
+   <?php if ($logged) { ?>
+   <?php if ($seller == 1) { ?>
+-- 
+2.15.1.windows.2
+
