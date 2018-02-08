@@ -42,8 +42,8 @@
     <a href="<?php echo $home; ?>" class="navbar-brand"><img src="view/image/logo.png" alt="<?php echo $heading_title; ?>" title="<?php echo $heading_title; ?>" /></a></div>
   <?php if ($logged) { ?>
   <ul class="nav pull-right">
-
-		<!-- /****** Message System Starts *****/ -->
+<?php /**
+		<!-- Message System Starts -->
     <li>
 			<a href="<?php echo $link_message ?>" >
 				<?php if($alert_messages) { ?>
@@ -52,7 +52,7 @@
 				<i class="fa fa-envelope fa-lg"></i>
 			</a>
 		</li>
-		<!-- /****** Message System Ends *****/ -->
+		<!-- Message System Ends  --> **/ ?>
 		
     <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"><span class="label label-danger pull-left"><?php echo $alerts; ?></span> <i class="fa fa-bell fa-lg"></i></a>
       <ul class="dropdown-menu dropdown-menu-right alerts-dropdown">

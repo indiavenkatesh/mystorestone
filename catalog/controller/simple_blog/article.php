@@ -5,7 +5,7 @@
 			if (!$this->customer->isLogged()) {
 				$this->session->data['redirect'] = $this->url->link('simple_blog/article', '', true);
 
-				$this->response->redirect($this->url->link('account/login', '', true));
+				$this->response->redirect($this->url->link('account/login/seller', '', true));
 			}
 			$this->language->load('simple_blog/article');
 

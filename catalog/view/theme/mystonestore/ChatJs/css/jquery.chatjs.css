@@ -398,7 +398,7 @@ ul.horizontal-tab li.selected {
     }
 
 .tab-content {
-    display: none;
+	padding: 10px 0;
     overflow: hidden;
 }
 

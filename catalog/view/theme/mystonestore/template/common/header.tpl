@@ -74,9 +74,9 @@
 			<?php } ?>
 			<?php if ($logged) { ?> 
             <li class="dropdown">
-                <a href="<?php echo $account; ?>" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $text_account; ?><span class="caret"></span></a>
+                <a href="<?php echo $account; ?>" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> <?php echo $customer_name; ?><span class="caret"></span></a>
                 <ul class="dropdown-menu">
-                    <li><a href="<?php echo $account; ?>">Settings <span class="glyphicon glyphicon-wrench" style="text-align: right; margin-left: 30px;"></span></a></li>
+                    <li><a href="<?php echo $account; ?>"><?php echo $text_account; ?> <span class="glyphicon glyphicon-wrench" style="text-align: right; margin-left: 30px;"></span></a></li>
                     <li role="separator" class="divider"></li>
                     <li><a href="<?php echo $logout; ?>"><?php echo $text_logout; ?> <span class="glyphicon glyphicon-log-out" style="text-align: right; margin-left: 30px;"></span></a></li>					
                 </ul>

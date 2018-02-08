@@ -45,7 +45,7 @@
 		}
 		
 		public function getGroupusers($social_group_id) {
-			$query = $this->db->query("SELECT gu.*,c.firstname as username  FROM `" . DB_PREFIX . "social_group_users` as gu  JOIN `" . DB_PREFIX . "customer` as c ON gu.social_group_user_id=c.customer_id WHERE gu.social_group_id = '" . (int)$social_group_id . "'");
+			$query = $this->db->query("SELECT gu.*,CONCAT(c.firstname, ' ', c.lastname) as username  FROM `" . DB_PREFIX . "social_group_users` as gu  JOIN `" . DB_PREFIX . "customer` as c ON gu.social_group_user_id=c.customer_id WHERE gu.social_group_id = '" . (int)$social_group_id . "'");
 			return $query->rows;
 		}
 		

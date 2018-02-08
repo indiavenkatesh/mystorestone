@@ -43,7 +43,7 @@
         <li><a href="<?php echo $transaction; ?>"><?php echo $text_transaction; ?></a></li>
         <li><a href="<?php echo $recurring; ?>"><?php echo $text_recurring; ?></a></li>
 
-				<!-- /****** Message System Starts *****/ -->
+			<?php /**	<!-- Message System Starts -->
         <li><a href="<?php echo $message; ?>"><?php echo $text_message_system; ?>
 							<span class="alert_messages">
 								<?php if($alert_messages) { ?> 
@@ -52,7 +52,7 @@
 							</span>
 						</a>
 				</li>
-				<!-- /****** Message System Ends *****/ -->
+				<!--  Message System Ends --> **/?> 
 			
       </ul>
       <!-- -->

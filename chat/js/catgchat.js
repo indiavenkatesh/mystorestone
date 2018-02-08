@@ -30,6 +30,7 @@ var chatboxFocus = new Array();
 var newMessages = new Array();
 var newMessagesWin = new Array();
 var chatBoxes = new Array();
+chatBoxes.push('friends');
 
 $(document).ready(function(){
 	originalTitle = document.title;
@@ -77,7 +78,7 @@ function createChatBox(chatboxtitle,chatboxusername,minimizeChatBox) {
 	}
 		$(" <div />" ).attr("id","chatbox_"+chatboxtitle)
 		.addClass("chatbox")
-		.html('<div class="chatboxhead"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
+		.html('<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth(\''+chatboxtitle+'\')"><div class="chatboxtitle">'+chatboxusername+'</div><div class="chatboxoptions"><a href="javascript:void(0)">-</a> <a href="javascript:void(0)" onclick="javascript:closeChatBox(\''+chatboxtitle+'\')">X</a></div><br clear="all"/></div><div class="chatboxcontent"></div><div class="chatboxinput"><textarea class="chatboxtextarea" onkeydown="javascript:return checkChatBoxInputKey(event,this,\''+chatboxtitle+'\');"></textarea></div>')
 		.appendTo($( "body" ));
 				   
 		$("#chatbox_"+chatboxtitle).css('bottom', '0px');
@@ -237,6 +238,9 @@ function chatHeartbeat(){
 }
 
 function closeChatBox(chatboxtitle) {
+	var e = window.event;
+    e.cancelBubble = true;
+    if (e.stopPropagation) e.stopPropagation();
 	$('#chatbox_'+chatboxtitle).css('display','none');
 	restructureChatBoxes();
 

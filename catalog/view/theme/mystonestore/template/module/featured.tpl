@@ -5,10 +5,7 @@
 	<div class="e_product">  
       <div class="e_product_images"> <a href="<?php echo $product['href']; ?>"><img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" /></a></div>
       <div class="content_box">
-        <div class="title_product">
-            <h4 class="col-md-9"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
-		</div>			
-        <p><?php echo $product['description']; ?></p>
+            <h4><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
 		<div class="replay">
 		<h5 class="col-md-12">
 		<?php if ($product['price'] && $product['display_price']) { ?>
@@ -22,10 +19,20 @@
 			 <?php }*/ ?>
 		<?php } ?>
 			</h5>
+			<div class="row">
+				<div class="col-xs-12">
+					<?php for ($i = 1; $i <= 5; $i++) { ?>
+					<?php if ($product['rating'] < $i) { ?>
+					<span class="fa fa-stack"><i class="fa fa-star-o fa-stack-1x"></i></span>
+					<?php } else { ?>
+					<span class="fa fa-stack"><i class="fa fa-star fa-stack-1x"></i><i class="fa fa-star-o fa-stack-1x"></i></span>
+					<?php } ?>
+					<?php } ?>
+				</div>
+			</div>
 			<div class="e_online">
 			<div class="col-md-7">
 			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
-			<p>Updated : <?php echo $product['date_modified_diff'];?></p>
 			</div>
 
 
@@ -34,11 +41,11 @@
 				<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
 			<?php } ?>
 			<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
-			<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat</a>			
+			<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat</a>			
 			<?php } else { ?>
 				<!-- <a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open" href="<?php echo $product['reply_link']; ?>">Chat</a> -->
 
-<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat</a>				
+<a class="col-md-5 more_button replay_button col-md-6 fadeandscale_four_open chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat</a>				
 			<?php } ?>
 			</div>
 		</div>

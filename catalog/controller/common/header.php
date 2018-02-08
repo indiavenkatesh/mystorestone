@@ -87,7 +87,9 @@ class ControllerCommonHeader extends Controller {
 		$data['telephone'] = $this->config->get('config_telephone');
 		$data['logged'] = $this->customer->isLogged();
 		$data['seller_social_site'] = '';
+		$data['customer_name'] = '';
     if (!$this->customer->isLogged()) {
+		
     $data['wishlist'] = $this->url->link('account/wishlist', '', true);
 		$data['account'] = $this->url->link('account/account', '', true);
 		$data['register'] = $this->url->link('account/register', '', true);
@@ -97,6 +99,7 @@ class ControllerCommonHeader extends Controller {
 		$data['download'] = $this->url->link('account/download', '', true);
 		
     } else {
+		$data['customer_name'] = $this->customer->getFirstName() . ' ' . $this->customer->getLastName();
     $data['wishlist'] = $this->url->link('account/wishlist', 'token=' . $this->session->data['token'], true);
 		$data['account'] = $this->url->link('account/account', 'token=' . $this->session->data['token'], true);
 		$data['register'] = $this->url->link('account/register', 'token=' . $this->session->data['token'], true);

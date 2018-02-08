@@ -617,7 +617,10 @@
   .tabs-menu li:hover { background-color: #961112;  color: #fff;}
   .tabs-menu .current a { color: #fff;}
   .tab { background-color: #fff; float: left; margin-bottom: 20px;}
-  .tab-content { display: none; overflow: hidden;}
+  .tab-content {
+	padding: 10px 0;
+    overflow: hidden;
+}
   #tab-1 {
    display: block;   
   }

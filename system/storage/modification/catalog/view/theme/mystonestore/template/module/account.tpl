@@ -7,8 +7,8 @@
   <a href="<?php echo $edit; ?>" class="list-group-item"><?php echo $text_edit; ?></a> <a href="<?php echo $password; ?>" class="list-group-item"><?php echo $text_password; ?></a>
   <?php } ?>
   <a href="<?php echo $address; ?>" class="list-group-item"><?php echo $text_address; ?></a> <a href="<?php echo $wishlist; ?>" class="list-group-item"><?php echo $text_wishlist; ?></a> <a href="<?php echo $order; ?>" class="list-group-item"><?php echo $text_order; ?></a> <a href="<?php echo $download; ?>" class="list-group-item"><?php echo $text_download; ?></a><a href="<?php echo $recurring; ?>" class="list-group-item"><?php echo $text_recurring; ?></a> <a href="<?php echo $reward; ?>" class="list-group-item"><?php echo $text_reward; ?></a> <a href="<?php echo $return; ?>" class="list-group-item"><?php echo $text_return; ?></a> <a href="<?php echo $transaction; ?>" class="list-group-item"><?php echo $text_transaction; ?></a> <a href="<?php echo $newsletter; ?>" class="list-group-item"><?php echo $text_newsletter; ?></a>
-
-		<!-- /****** Message System Starts *****/ -->
+<?php /**
+		<!-- Message System Starts -->
 		<a href="<?php echo $message; ?>" class="list-group-item"><?php echo $text_message_system; ?>
 			<span class="alert_messages">
 				<?php if($alert_messages) { ?> 
@@ -16,7 +16,7 @@
 				<?php } ?>
 			</span>
 		</a>
-		<!-- /****** Message System Ends *****/ -->
+		<!-- Message System Ends --> **/ ?>
 		
   <?php if ($logged) { ?>
   <?php if ($seller == 1) { ?>

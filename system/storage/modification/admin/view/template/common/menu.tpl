@@ -1,13 +1,13 @@
 <ul id="menu">
   <li id="dashboard"><a href="<?php echo $home; ?>"><i class="fa fa-dashboard fa-fw"></i> <span><?php echo $text_dashboard; ?></span></a></li>
 
-	<!-- /****** Message System Starts *****/ -->
+	<?php /** <!-- Message System Starts -->
   <li id="message"><a class="parent"><i class="fa fa-envelope fa-fw"></i> <span><?php echo $text_message; ?></span></a>
 		<ul>
 			<li><a href="<?php echo $message; ?>"><?php echo $text_message; ?></a></li>
 		</ul>
 	</li>
-	<!-- /****** Message System Ends *****/ -->
+	<!-- Message System Ends --> **/ ?>
   <li id="catalog"><a class="parent"><i class="fa fa-tags fa-fw"></i> <span><?php echo $text_catalog; ?></span></a>
     <ul>
       <li><a href="<?php echo $category; ?>"><?php echo $text_category; ?></a></li>

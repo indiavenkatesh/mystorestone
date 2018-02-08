@@ -1,10 +1,9 @@
 <?php echo $header; ?>
 <link type="text/css" rel="stylesheet" media="all" href="chat/css/chat.css" />
 <div class="container">
-<div id="tabs-container">
-<div id="content" class="<?php echo $class; ?>"></div>
+<div id="tabs-container" style="padding: 0;">
   <?php echo str_replace('<aside id="column-left" class="col-sm-3 hidden-xs">','<aside id="column-left" class="col-lg-3 col-sm-4 hidden-xs">',$column_left); ?>
-  <div class="tab  col-lg-9 col-sm-8">     
+  <div class="tab  col-lg-9 col-sm-8" style="padding: 0;">     
    <div id="tab-1" class="tab-content">			
    <!--  <?php echo $content_top; ?>
       <h2><?php echo $heading_title; ?></h2>
@@ -48,12 +47,13 @@
       <?php if ($products) { ?>
       <div class="row">
         <?php $online_seller_array = array(); foreach ($products as $product) { ?>	
-		<div class="col-lg-6 col-sm-6 col-xs-12">    
-		<img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" />
+		<div class="col-md-4 col-sm-6 col-xs-12">    
+		<a href="<?php echo $product['href']; ?>">
+		<img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" /></a>
 		<div class="content_box">                   
 		<div class="title_product">                 
-		<h4 class="col-md-9"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4> 
-		</div>                    <p><?php echo $product['description']; ?></p>               
+		<h4><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4> 
+		</div>                             
 		<div class="replay">					
 		<?php if ($product['price'] && $product['display_price']) { ?> 
 		<h5><?php echo $product['price']; ?></h5>		
@@ -64,18 +64,27 @@
 		<div class="profile-status offline"></div> Offline	
 		</div>
 		<?php } */?>
+		<div class="row">
+			<div class="col-xs-12">
+				<?php for ($i = 1; $i <= 5; $i++) { ?>
+				<?php if ($product['rating'] < $i) { ?>
+				<span class="fa fa-stack"><i class="fa fa-star-o fa-stack-1x"></i></span>
+				<?php } else { ?>
+				<span class="fa fa-stack"><i class="fa fa-star fa-stack-1x"></i><i class="fa fa-star-o fa-stack-1x"></i></span>
+				<?php } ?>
+				<?php } ?>
+			</div>	
+		</div>
+		
 		<div class="e_online">
-			<div class="col-md-12">
-			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
-			<p>Updated : <?php echo $product['date_modified_diff'];?></p>
-			</div>
-		</div>	
+		<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
+		</div>
 		<?php if(!empty($product['seller_details'])){ ?>
 			<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
 		<?php } ?>
 		<div class="buttons clearfix">	
 		<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
-			<a class="more_button replay_button col-md-6 chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'];?>')">Chat with seller</a>			
+			<a class="more_button replay_button col-md-6 chat_sellers" id="chat_sellers" href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $product['seller_details']['seller_id'];?>','<?php echo $product['seller_details']['firstname'] . ' ' . $product['seller_details']['lastname'];?>')">Chat with seller</a>			
 		<?php } else { ?>
 			<a class="more_button replay_button col-md-6 fadeandscale_four_open" href="<?php echo $product['reply_link']; ?>">Chat with seller</a>			
 		<?php } ?>

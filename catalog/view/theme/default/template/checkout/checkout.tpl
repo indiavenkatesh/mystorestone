@@ -280,7 +280,7 @@ $(document).delegate('#button-register', 'click', function() {
 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
               
-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
               
 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                         },
@@ -302,7 +302,7 @@ $(document).delegate('#button-register', 'click', function() {
 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
               
-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
               
 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                         },
@@ -322,7 +322,7 @@ $(document).delegate('#button-register', 'click', function() {
 
 						$('a[href=\'#collapse-payment-method\']').trigger('click');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
 
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                     },
@@ -405,7 +405,7 @@ $(document).delegate('#button-payment-address', 'click', function() {
 						$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
             
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                     },
@@ -500,7 +500,7 @@ $(document).delegate('#button-shipping-address', 'click', function() {
 
 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
             
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
 
@@ -606,7 +606,7 @@ $(document).delegate('#button-guest', 'click', function() {
 
 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
               
-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
               
 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                         },
@@ -631,7 +631,7 @@ $(document).delegate('#button-guest', 'click', function() {
 							$('#collapse-shipping-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_shipping_method; ?>');
 							$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
               
-              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+              $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
               
 							$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                         },
@@ -654,7 +654,7 @@ $(document).delegate('#button-guest', 'click', function() {
 
 						$('a[href=\'#collapse-payment-method\']').trigger('click');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
 
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                     },
@@ -721,7 +721,7 @@ $(document).delegate('#button-guest-shipping', 'click', function() {
 
 						$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_payment_method; ?>');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
             
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                     },
@@ -771,7 +771,7 @@ $(document).delegate('#button-shipping-method', 'click', function() {
 
 						$('a[href=\'#collapse-payment-method\']').trigger('click');
             
-            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_checkout_coupon; ?>');
+            $('#collapse-checkout_coupon').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_coupon; ?>');
 
 						$('#collapse-checkout-confirm').parent().find('.panel-heading .panel-title').html('<?php echo $text_checkout_confirm; ?>');
                     },

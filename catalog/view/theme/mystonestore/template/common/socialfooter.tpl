@@ -184,9 +184,9 @@
 
 </script><script>$(document).ready(function () {    $('#fadeandscale_three,#fadeandscale_four').popup({        pagecontainer: '.container',        transition: 'all 0.3s'    });});</script>
 <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
-<div class="chatboxhead">
+<div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth('friends')">
 	<div class="chatboxtitle">Members</div>
-	<div class="chatboxoptions"><a href="javascript:void(0)" onclick="javascript:toggleChatBoxGrowth('friends')">-</a> 
+	<div class="chatboxoptions"><a href="javascript:void(0)">-</a> 
 	</div>
 	<br clear="all">
 </div>

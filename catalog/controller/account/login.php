@@ -1,6 +1,12 @@
 <?php
 class ControllerAccountLogin extends Controller {
 	private $error = array();
+	private $type = '';
+	
+	public function seller() {
+		$this->type = 'seller';
+		$this->index();
+	}
 
 	public function index() {
 		$this->load->model('account/customer');
@@ -113,19 +119,30 @@ class ControllerAccountLogin extends Controller {
 			'text' => $this->language->get('text_account'),
 			'href' => $this->url->link('account/account', '', true)
 		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_login'),
-			'href' => $this->url->link('account/login', '', true)
-		);
+		if($this->type == 'seller') {
+			$data['breadcrumbs'][] = array(
+				'text' => $this->language->get('text_login'),
+				'href' => $this->url->link('account/login/seller', '', true)
+			);
+		} else {
+			$data['breadcrumbs'][] = array(
+				'text' => $this->language->get('text_login'),
+				'href' => $this->url->link('account/login', '', true)
+			);
+		}
 
 		$data['heading_title'] = $this->language->get('heading_title');
-
-		$data['text_new_customer'] = $this->language->get('text_new_customer');
+		if($this->type == 'seller') {
+			$data['text_new_customer'] = 'New Member';
+			$data['text_returning_customer'] = 'Existing Member';
+			$data['text_i_am_returning_customer'] = 'I am a existing member';
+		} else {
+			$data['text_new_customer'] = $this->language->get('text_new_customer');
+			$data['text_returning_customer'] = $this->language->get('text_returning_customer');
+			$data['text_i_am_returning_customer'] = $this->language->get('text_i_am_returning_customer');
+		}
 		$data['text_register'] = $this->language->get('text_register');
 		$data['text_register_account'] = $this->language->get('text_register_account');
-		$data['text_returning_customer'] = $this->language->get('text_returning_customer');
-		$data['text_i_am_returning_customer'] = $this->language->get('text_i_am_returning_customer');
 		$data['text_forgotten'] = $this->language->get('text_forgotten');
 
 		$data['entry_email'] = $this->language->get('entry_email');
@@ -147,8 +164,11 @@ class ControllerAccountLogin extends Controller {
 		} else {
 			$data['error_warning'] = '';
 		}
-
-		$data['action'] = $this->url->link('account/login', '', true);
+		if($this->type == 'seller') {
+			$data['action'] = $this->url->link('account/login', '', true);
+		} else {
+			$data['action'] = $this->url->link('account/login', '', true);
+		}
 		$data['register'] = $this->url->link('account/register', '', true);
 		$data['sellerregister'] = $this->url->link('account/sellerregister', '', true);
 		$data['forgotten'] = $this->url->link('account/forgotten', '', true);
@@ -190,8 +210,11 @@ class ControllerAccountLogin extends Controller {
 		$data['content_bottom'] = $this->load->controller('common/content_bottom');
 		$data['footer'] = $this->load->controller('common/footer');
 		$data['header'] = $this->load->controller('common/header');
-
-		$this->response->setOutput($this->load->view('account/login', $data));
+		if($this->type == 'seller') {
+			$this->response->setOutput($this->load->view('account/seller_login', $data));
+		} else {
+			$this->response->setOutput($this->load->view('account/login', $data));
+		}
 	}
 
 	protected function validate() {
