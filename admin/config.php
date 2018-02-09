@@ -19,6 +19,7 @@ define('DIR_DOWNLOAD', '../../mystorestone/system/storage/download/');
 define('DIR_LOGS', '../../mystorestone/system/storage/logs/');
 define('DIR_MODIFICATION', '../../mystorestone/system/storage/modification/');
 define('DIR_UPLOAD', '../../mystorestone/system/storage/upload/');
+define('DIR_CATALOG', '../../mystorestone/catalog/');
 
 
 
