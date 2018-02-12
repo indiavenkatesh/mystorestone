@@ -28,7 +28,7 @@
 		
 		public function getArticles($data = array()) {
 			
-			$sql = "SELECT sba.*, sbad.*, sbau.name AS author_name, sbau.author_user_id AS author_user_id FROM `" . DB_PREFIX . "simple_blog_article` sba LEFT JOIN `" . DB_PREFIX . "simple_blog_article_description` sbad ON(sba.simple_blog_article_id=sbad.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_article_to_store` sbas ON(sba.simple_blog_article_id=sbas.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_author` sbau ON(sba.simple_blog_author_id=sbau.simple_blog_author_id) WHERE sba.status=1 AND sbau.status=1 AND sbas.store_id='" . (int)$this->config->get('config_store_id') . "' AND sbad.language_id='" . (int)$this->config->get('config_language_id') . "'";
+			$sql = "SELECT sba.*, sbad.*, CASE WHEN co.firstname IS NULL THEN sbau.name ELSE CONCAT(co.firstname, ' ', co.lastname) END AS author_name, sbau.author_user_id AS author_user_id FROM `" . DB_PREFIX . "simple_blog_article` sba LEFT JOIN `" . DB_PREFIX . "simple_blog_article_description` sbad ON(sba.simple_blog_article_id=sbad.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_article_to_store` sbas ON(sba.simple_blog_article_id=sbas.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_author` sbau ON(sba.simple_blog_author_id=sbau.simple_blog_author_id) LEFT JOIN `" . DB_PREFIX . "customer` co ON(sbau.simple_blog_author_id=co.customer_id)  WHERE sba.status=1 AND sbau.status=1 AND sbas.store_id='" . (int)$this->config->get('config_store_id') . "' AND sbad.language_id='" . (int)$this->config->get('config_language_id') . "'";
 			
 			if(!empty($data['blog_search'])) {
 				$sql .= " AND LCASE(sbad.description) LIKE '%" . $this->db->escape(utf8_strtolower($data['blog_search'])) . "%'";

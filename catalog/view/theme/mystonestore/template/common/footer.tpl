@@ -205,7 +205,7 @@
 					<li>
 					<img class="profile-picture" src="http://placehold.it/50/55C1E7/fff&text=<?php echo substr($group_lists_member['username'],0,2);?>">
 					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $group_lists_member['social_group_user_id'];?>','<?php echo $group_lists_member['username'];?>')"><?php echo $group_lists_member['username'];?></a>
-					<div class="profile-status online"></div>
+					<div class="profile-status offline seller_status_<?php echo $group_lists_member['social_group_user_id'];?>" data-seller_id="<?php echo $group_lists_member['social_group_user_id'];?>"></div>
 					</li>
 					<?php } ?>
 					<?php } ?>
@@ -221,6 +221,43 @@
 </div>
 </div>
 </div>
-
 <?php } ?>
+
+<script>
+	jQuery(document).ready(function($){
+		function check_online_seller_status(){
+			var customer_ids = [];
+			$("[data-seller_id]").each(function(){
+				var $this = $(this);
+				var classList = this.className.split(/\s+/);
+				var seller_id = $(this).data('seller_id');
+				if(customer_ids.indexOf(seller_id) === -1) {				
+					customer_ids.push(seller_id);
+					$('.seller_status_'+seller_id).removeClass('online').addClass('offline');
+					$('.seller_status_p_'+seller_id).text('Offline');
+				}
+			});
+			
+			$.ajax({
+			  url: "index.php?route=account/account/checkstatus",
+			  type: "POST",
+			  data: {online_users: customer_ids},
+			  dataType: "json",
+			  success: function(data) {
+				var online_users = data['online_users'];
+				$.each(online_users, function(key,val){
+					$('.seller_status_'+val).removeClass('offline').addClass('online');
+					$('.seller_status_p_'+val).text('Online');
+				});
+			  },
+			  complete:function() {
+				setTimeout(function(){
+					check_online_seller_status()
+				}, 6000);
+			  }
+			});
+		}
+		check_online_seller_status();
+	});	
+</script>
 </body></html>

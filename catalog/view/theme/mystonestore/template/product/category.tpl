@@ -58,12 +58,6 @@
 		<?php if ($product['price'] && $product['display_price']) { ?> 
 		<h5><?php echo $product['price']; ?></h5>		
 		<?php } ?> 
-		<?php /*if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
-		<div class="seller_status seller_<?php echo $product['seller_details']['seller_id'];?>">
-		<div class="profile-status online"></div> Online		
-		<div class="profile-status offline"></div> Offline	
-		</div>
-		<?php } */?>
 		<div class="row">
 			<div class="col-xs-12">
 				<?php for ($i = 1; $i <= 5; $i++) { ?>
@@ -75,11 +69,12 @@
 				<?php } ?>
 			</div>	
 		</div>
+		<?php if(!empty($product['seller_details'])){ ?>
+		
 		
 		<div class="e_online">
-		<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
+		<div class="profile-status offline seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p data-seller_id="<?php echo $product['seller_details']['seller_id'];?>" class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Offline</p>
 		</div>
-		<?php if(!empty($product['seller_details'])){ ?>
 			<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
 		<?php } ?>
 		<div class="buttons clearfix">	
@@ -145,7 +140,7 @@
 		});
 		}, 6000);
 	}
-	check_seller_status();
+	//check_seller_status();
 	</script>
 <?php } ?>
 <?php if(!$logged){ ?>

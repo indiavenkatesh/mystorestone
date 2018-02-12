@@ -30,14 +30,15 @@
 					<?php } ?>
 				</div>
 			</div>
-			<div class="e_online">
-			<div class="col-md-7">
-			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
-			</div>
 
 
 
 			<?php if(!empty($product['seller_details'])){ ?>
+			
+			<div class="e_online">
+			<div class="col-md-7">
+			<div class="profile-status offline seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p data-seller_id="<?php echo $product['seller_details']['seller_id'];?>" class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Offline</p>
+			</div>
 				<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
 			<?php } ?>
 			<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
@@ -54,36 +55,6 @@
   </div>
   <?php } ?>
 </div>
-<?php if(!empty($online_seller_array)){ ?>
-	<?php $online_seller_array = array_unique($online_seller_array);?>
-	<script>
-	function check_seller_status(){
-		var online_users = <?php echo json_encode($online_seller_array);?>;
-		var classes = '';
-		setTimeout(function () {
-		$.ajax({
-		  url: "index.php?route=account/account/checkstatus",
-		  type: "POST",
-		  data: 'online_users='+online_users,
-		  dataType: "json",
-		  success: function(data) {
-			$.each(data, function(key,val){
-				if(val==1){
-					$('.seller_status_'+key).removeClass('offline').addClass('online');
-					$('.seller_status_p_'+key).text('Online');
-				} else {
-					$('.seller_status_'+key).removeClass('online').addClass('offline');
-					$('.seller_status_p_'+key).text('Offline');
-				}
-			});
-		  },
-		  complete:check_seller_status
-		});
-		}, 6000);
-	}
-	check_seller_status();
-	</script>
-<?php } ?>
 <?php if(!$logged_in){ ?>
 <script>
 $('.chat_sellers').removeAttr('onclick');

@@ -116,10 +116,16 @@
           </table>
         </div>
       </div>
-      <div class="buttons">
-        <div class="pull-left"><a href="<?php echo $continue; ?>" class="btn btn-default"><?php echo $button_shopping; ?></a></div>
-      </div>
-      <?php echo $content_bottom; ?></div>
+	  <div class="row">
+		  <div class="buttons col-xs-12">
+			<div class="pull-left"><a href="<?php echo $continue; ?>" class="btn btn-default"><?php echo $button_shopping; ?></a></div>
+		  </div>
+	  </div>
+      <?php echo $content_bottom; ?>
+	  <div class="mt-3">
+		<?php foreach ($modules as $module) echo $module; ?>
+	  </div>
+	</div>
     <?php echo $column_right; ?></div>
 </div>
 <?php echo $footer; ?> 

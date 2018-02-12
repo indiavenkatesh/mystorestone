@@ -1,54 +1,122 @@
 <div class="slidebar tabs-menu"> 
-<div class="find_products"> 
-  <h4>FIND A PRODUCT</h4>   
-  <ul>       
-  <li class="dropdown">    
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
-  <ul class="dropdown-menu product-menu">   
-  <?php foreach($products_list as $products_rows){?>
-  <li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
-  <?php } ?>
-  </ul>   
-  </li>  
-  <?php foreach ($filter_groups as $filter_group) { ?>
-  <li class="dropdown">  
-  <?php 
-  $active_filter = '';
-  foreach ($filter_group['filter'] as $filter) { ?> 
-  <?php if (in_array($filter['filter_id'], $filter_category)) { 
-	$active_filter ='hide';
-  ?>	
-    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
-  <?php } } ?>		  
-  <a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
-  <ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
-  <?php foreach ($filter_group['filter'] as $filter) { ?> 
-  <?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
-  <li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
-  <?php } else { ?>				
-  <li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
-  <?php } } ?>
-  </ul>    
-  </li> 
-  <?php } ?>
-  </ul>
-  <h4>PRICE</h4> 
-  <ul>
-  <li>
-	<div id="filter-group1">
-	<div id="scale-slider"></div>
+	<div class="find_products"> 
+		<h4>FIND A PRODUCT</h4>   
+		<ul>       
+			<li class="dropdown">    
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
+				<ul class="dropdown-menu product-menu">   
+					<?php foreach($products_list as $products_rows){?>
+					<li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
+				<?php } ?>
+				</ul>   
+			</li>  
+			<?php foreach ($filter_groups as $filter_group) { ?>
+			<li class="dropdown">  
+				<?php 
+				$active_filter = '';
+				foreach ($filter_group['filter'] as $filter) { ?> 
+				<?php if (in_array($filter['filter_id'], $filter_category)) { 
+				$active_filter ='hide';
+				?>	
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
+				<?php } } ?>		  
+				<a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
+				<ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
+					<?php foreach ($filter_group['filter'] as $filter) { ?> 
+					<?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
+					<li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+					<?php } else { ?>				
+					<li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+					<?php } } ?>
+				</ul>    
+			</li> 
+			<?php } ?>
+		</ul>
+		<h4>PRICE</h4> 
+		<ul>
+			<li>
+			<div id="filter-group1">
+			<div id="scale-slider"></div>
+			</div>
+		</li>
+		</ul>
+		<form class="search_box" role="search">  
+			<div class="input-group form-group add-on"> 
+				<input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
+				<input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
+				<input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
+				<button type="submit" id="button-filter">search</button>    
+			</div> 
+		</form> 
 	</div>
-  </li>
-  </ul>
-  <form class="search_box" role="search">  
-  <div class="input-group form-group add-on"> 
-  <input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
-  <input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
-  <input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
-  <button type="submit" id="button-filter">search</button>    
-  </div> 
-  </form> 
-  </div>    <div class="wearehelp">  <h4>We Are Hear To help!</h4>   <p>Save Time And Let Us Provide You With Verified Contacts</p>    <button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    </div>  <div class="well" id="fadeandscale_three">   <h3>We Are Hear To Help !</h3>   <div class="helpingforms">        <form id="requirement_form">   <div class="form-group">    <label for="exampleInputEmail1">Enter Product and Service Name</label>     <input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">     </div>      <div class="form-group form_quantity">     <div class="input-group my-group form_quantity_group">      <input type="text" class="form-control" name="product_qty" placeholder="Quantity">  <select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">     <option value="0">Unit</option>               <option value="Unit 1">Unit 1</option>             <option value="Unit 2">Unit 2</option>             <option value="Unit 3">Unit 3</option>  <option value="Unit 4">Unit 4</option>             <option value="Unit 5">Unit 5</option>        </select>          </div>       <!-- /input-group -->    </div>    <div class="form-group">       <select  class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">   <option value="0">Approximate Order Value (RS) </option>          <option value="5000.22">5000.22</option>                    <option value="5440.26">5440.26</option>                    <option value="7400.29">7400.29</option>                    <option value="7440.4">7440.4</option>                     <option value="9940.45">9940.45</option>           </select>    </div>   <div class="form-group">      <label>Usage</label>    <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Flooring">Flooring</label>  </div>    <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="usage[]" value="Countertops">Countertops</label>     </div>     <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Wall Tile">Wall Tile</label>   </div>    <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Hardscaping">Hardscaping </label>     </div>       <div class="checkbox col-md-4 col-xs-12 find_other">    <input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">  </div>   </div>   <div class="form-group">    <label>Converage area(application)</label>     <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom </label>     </div>      <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="coverage_area[]" value="Bedroom">Bedroom </label>   </div>        <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Kitchen">Kitchen </label>    </div>      <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Laundry">Laundry </label>     </div>       <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="coverage_area[]" value="Main Area">Main Area  </label>     </div>     <div class="checkbox col-md-4 col-xs-12">   <label><input type="checkbox" name="coverage_area[]" value="Out door">Out door </label>     </div>       <div class="checkbox col-md-4 col-xs-12 find_other">   <input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">   </div>    </div>    <div class="col-md-12 help_submit">    <button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>   </div>    <button type="button" class="close fadeandscale_three_close" aria-label="Close">   <span aria-hidden="true">&times;</span></button>   </form>      </div>    </div>    </div> 
+	<div class="wearehelp">  
+		<h4>We Are Hear To help!</h4>   
+		<p>Save Time And Let Us Provide You With Verified Contacts</p>    
+		<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
+	</div>
+	<div class="well" id="fadeandscale_three">   
+		<h3>We Are Hear To Help !</h3>   
+		<div class="helpingforms">
+			<form id="requirement_form">
+				<div class="form-group">
+					<label for="exampleInputEmail1">Enter Product and Service Name</label>
+					<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
+				</div>
+				<div class="form-group form_quantity">
+					<div class="input-group my-group form_quantity_group">
+						<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
+						<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
+							<option value="0">Unit</option>
+							<option value="Unit 1">Unit 1</option>
+							<option value="Unit 2">Unit 2</option>
+							<option value="Unit 3">Unit 3</option>
+							<option value="Unit 4">Unit 4</option>
+							<option value="Unit 5">Unit 5</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
+						<option value="0">Approximate Order Value (RS) </option>
+						<option value="5000.22">5000.22</option>
+						<option value="5440.26">5440.26</option>
+						<option value="7400.29">7400.29</option>
+						<option value="7440.4">7440.4</option>
+						<option value="9940.45">9940.45</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>Usage</label>
+					<div class="checkbox col-md-4 col-xs-12">
+						<label>
+							<input type="checkbox" name="usage[]" value="Flooring">Flooring
+						</label>
+					</div>
+					<div class="checkbox col-md-4 col-xs-12 find_other">
+						<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
+					</div>
+				</div>
+				<div class="form-group">
+					<label>Converage area(application)</label>
+					<div class="checkbox col-md-4 col-xs-12">
+						<label>
+						<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
+						</label>
+					</div>
+					<div class="checkbox col-md-4 col-xs-12 find_other">
+						<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
+					</div>
+				</div>
+				<div class="col-md-12 help_submit">
+					<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
+				</div>
+				<button type="button" class="close fadeandscale_three_close" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</form>
+		</div>
+	</div>
+</div> 
 <script type="text/javascript">
 $('ul.filter-menu li').click(function(){
 	var filter=[];	

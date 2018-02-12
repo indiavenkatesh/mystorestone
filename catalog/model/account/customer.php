@@ -237,4 +237,17 @@ class ModelAccountCustomer extends Model {
 
 		return $query->row;
 	}
+	
+	public function getOnlinePaidCustomers($customer_ids = array()) {
+		$sql = "SELECT co.customer_id FROM " . DB_PREFIX . "customer_online co";
+		if($customer_ids) {
+			$sql .= " WHERE co.customer_id IN (" . join(", ", $customer_ids) . ")";
+		}
+		$query = $this->db->query($sql);
+		$onlineCustomerIds = array();
+		foreach($query->rows as $row) {
+			$onlineCustomerIds[] = $row['customer_id'];
+		}
+		return $onlineCustomerIds;
+	}
 }

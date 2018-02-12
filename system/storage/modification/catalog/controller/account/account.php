@@ -164,14 +164,10 @@ class ControllerAccountAccount extends Controller {
 		$json = array();
 
 		$online_users =	$this->request->post['online_users'];
-		$online_users = explode(',', $online_users);
-
+		
 		if($online_users){
 			$this->load->model('account/customer');
-			foreach($online_users as $row => $online_users_row){
-				$user_info = $this->model_account_customer->getCustomerOnlineStatus($online_users_row);
-				$json[$online_users_row] = $user_info['is_online'];
-			}
+			$json['online_users'] = $this->model_account_customer->getOnlinePaidCustomers($online_users);
 		}
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));

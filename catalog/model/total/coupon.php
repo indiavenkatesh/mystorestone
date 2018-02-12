@@ -3,7 +3,7 @@ class ModelTotalCoupon extends Model {
 	public function getCoupon($code, $seller_id) {
 		$status = true;
 
-		$coupon_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "coupon` WHERE code = '" . $this->db->escape($code) . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND status = '1' AND seller_id = '" . (int)$seller_id . "'");
+		$coupon_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "coupon` WHERE code = '" . $this->db->escape($code) . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND status = '1'");
 
 		if ($coupon_query->num_rows) {
 			if ($coupon_query->row['total'] > $this->cart->getSubTotal()) {
@@ -99,7 +99,7 @@ class ModelTotalCoupon extends Model {
 		if (isset($this->session->data['coupon'])) {
 			$this->load->language('total/coupon');
 
-			$coupon_info = $this->getCoupon($this->session->data['coupon'], $total['seller_id']);
+			$coupon_info = $this->getCoupon($this->session->data['coupon'], isset($total['seller_id'])?$total['seller_id']:0);
 
 			if ($coupon_info) {
 				$discount_total = 0;
