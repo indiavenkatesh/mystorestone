@@ -17,8 +17,12 @@ class ModelAccountCatalogSeller extends Model {
 		return $query->row;
 	}
 	
-	public function getSellerDetails() {
-		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "seller WHERE status = 1 and is_paid = 1 and approved=1");
+	public function getPaidSellerDetails($groupIds = array()) {
+		$query = $this->db->query(
+			"SELECT DISTINCT * FROM " . DB_PREFIX . "seller as s ".
+			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id == sgu.social_group_user_id".
+			"WHERE status = 1 and is_paid = 1 and approved=1 AND sgu.social_group_id IN (" . JOIN(",", $groupIds) . ")"
+		);
 
 		return $query->rows;
 	}

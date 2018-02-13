@@ -148,40 +148,103 @@
 
 </div>
 
+<div class="well" id="fadeandscale_three">   
+	<h3>We Are Hear To Help !</h3>   
+	<div class="helpingforms">
+		<form id="requirement_form">
+			<div class="form-group">
+				<label for="exampleInputEmail1">Enter Product and Service Name</label>
+				<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
+			</div>
+			<div class="form-group form_quantity">
+				<div class="input-group my-group form_quantity_group">
+					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
+					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
+						<option value="0">Unit</option>
+						<option value="Unit 1">Unit 1</option>
+						<option value="Unit 2">Unit 2</option>
+						<option value="Unit 3">Unit 3</option>
+						<option value="Unit 4">Unit 4</option>
+						<option value="Unit 5">Unit 5</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label>Social Groups</label>
+				<?php foreach($group_lists as $index => $group_rows){ ?>
+				<?php if($index > 0 && $index % 3 == 0) { ?>
+				<div style="clear: both;"></div>
+				<?php } ?>
+				<div class="checkbox col-md-4 col-xs-12">
+					<label>
+						<input type="checkbox" name="social_groups[]" value="<?php echo $group_rows['social_group_id']; ?>"><?php echo $group_rows['name']; ?>
+					</label>
+					<input type="hidden" name="social_groups_texts[<?php echo $group_rows['social_group_id']; ?>]" value="<?php echo $group_rows['name']; ?>" />
+				</div>
+				<?php } ?>
+				<div class="checkbox col-md-4 col-xs-12 find_other">
+					<input type="text" class="form-control" name="other_group_text" value="" placeholder="other options">
+				</div>
+			</div>
+			<div class="col-md-12 help_submit">
+				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
+			</div>
+			<button type="button" class="close fadeandscale_three_close" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</form>
+	</div>
+</div>
+
+
 
 
 <script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
 
 <script type="text/javascript">
 
-  $(document).ready(function () {
+	function submit_requirement(){
+		$.ajax({
+			type: 'POST',
+			url: 'index.php?route=product/category/submitRequirement',
+			data: $('#requirement_form').serialize(),
+			beforeSend: function() {
+				$('#help_submit_button').attr('disabled', true);
+				$('#help_submit_button').text('loading...');
+			},
+			complete: function() {
+				$('#help_submit_button').attr('disabled', false);
+				$('#help_submit_button').text('Submit Your Requirment');
+			},
+			success: function(data) {
+				$('.alert').remove();
+				if (data['error']) {
+					$.each(data['error'] , function(i, val) {
+						$('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');
+					});
+				}
+				if (data['success']) {
+					location.reload();
+				}
+			}
+		});
+	}
 
+  	$(document).ready(function () {
+		$('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});
 
-
-     $('.testimonials-slider').bxSlider({
-
-           minSlides: 2,
-
-           maxSlides: 2,
-
-           mode:'vertical',
-
-          slideMargin:2,
-
-          pager:false,
-
-          auto: true,
-
-          autoControls: true
-
-     });
-
-     
-
- });
-
+		$('.testimonials-slider').bxSlider({
+			minSlides: 2,
+			maxSlides: 2,
+			mode:'vertical',
+			slideMargin:2,
+			pager:false,
+			auto: true,
+			autoControls: true
+		});
+	});
 </script>
-<script>$(document).ready(function () {    $('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});});</script>
+<script>$(document).ready(function () });</script>
 
 <?php if(isset($userid)) { ?>
 <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">

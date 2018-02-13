@@ -520,19 +520,12 @@ class ControllerProductCategory extends Controller {
 				$json['error']['unit'] = "Please select the Unit";
 			}
 			
-			if (utf8_strlen($this->request->post['order_value']) == 0) {
-				$json['error']['order_value'] = "Please select the Order value";
-			}
-			
-			if (isset($this->request->post['usage']) && empty($this->request->post['usage'])) {
-				$json['error']['usage'] = "Please choose the Usage";
-			}
-			
-			if (isset($this->request->post['coverage_area']) && empty($this->request->post['coverage_area'])) {
-				$json['error']['coverage_area'] = "Please choose the Coverage area";
+			if (isset($this->request->post['social_groups']) && empty($this->request->post['social_groups']) 
+					&& utf8_strlen($this->request->post['other_group_text']) == 0) {
+				$json['error']['usage'] = "Please choose the atleaset one Social Group or Enter in others options";
 			}
 
-			if (!isset($json['error'])) {
+			if (!isset($json['error']) && isset($this->request->post['social_groups']) && empty($this->request->post['social_groups'])) {
 				$message = '';
 				$mail = new Mail();
 				$mail->protocol = $this->config->get('config_mail_protocol');
@@ -543,7 +536,7 @@ class ControllerProductCategory extends Controller {
 				$mail->smtp_port = $this->config->get('config_mail_smtp_port');
 				$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
 				$this->load->model('account/catalog/seller');
-				$sellerdetails = $this->model_account_catalog_seller->getSellerDetails();
+				$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
 				$email[] = $this->config->get('config_email');
 				if($sellerdetails){
 					foreach($sellerdetails as $sellerdetailsrow){
@@ -555,17 +548,24 @@ class ControllerProductCategory extends Controller {
 				$mail->setFrom($customer_email);
 				$mail->setSender(html_entity_decode('User', ENT_QUOTES, 'UTF-8'));
 				$mail->setSubject(html_entity_decode('Product Enquiry', ENT_QUOTES, 'UTF-8'));
+
+				$social_group_names = array();
+				foreach($this->request->post['social_groups'] as $id) {
+					$social_group_names[] = $this->request->post['social_groups_texts'][$id];
+				}				
 				
 				$message .= 'Product and Service Name: '.$this->request->post['product_name'].'<br/>';
 				$message .= 'Product Quantity: '.$this->request->post['product_qty'].'<br/>';
 				$message .= 'Unit: '.$this->request->post['unit'].'<br/>';
-				$message .= 'Order value: '.$this->request->post['order_value'].'<br/>';
-				$message .= 'Usage: '.implode(',',$this->request->post['usage']).'<br/>';
-				$message .= 'Coverage Area: '.implode(',',$this->request->post['coverage_area']).'<br/>';
+				if(!empty($social_group_names)) {
+					$message .= 'Social Groups: '.implode(', ',$social_group_names).'<br/>';
+				}
+				if (utf8_strlen($this->request->post['other_group_text']) > 0) {
+					$message .= 'Other Option: '.$this->request->post['other_group_text'].'<br/>';
+				}
 				$mail->setHtml($message);
 				$mail->send();
-				$json['success'] = "Enquiry has been submitted successfully";
-				
+				$json['success'] = "Enquiry has been submitted successfully";				
 			}
 		}
 
