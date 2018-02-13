@@ -48,73 +48,6 @@
 		</div> 
 	</form> 
 </div>
-<div class="wearehelp">  
-	<h4>We Are Hear To help!</h4>   
-	<p>Save Time And Let Us Provide You With Verified Contacts</p>    
-	<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
-</div>
-<div class="well" id="fadeandscale_three">   
-	<h3>We Are Hear To Help !</h3>   
-	<div class="helpingforms">
-		<form id="requirement_form">
-			<div class="form-group">
-				<label for="exampleInputEmail1">Enter Product and Service Name</label>
-				<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
-			</div>
-			<div class="form-group form_quantity">
-				<div class="input-group my-group form_quantity_group">
-					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
-					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
-						<option value="0">Unit</option>
-						<option value="Unit 1">Unit 1</option>
-						<option value="Unit 2">Unit 2</option>
-						<option value="Unit 3">Unit 3</option>
-						<option value="Unit 4">Unit 4</option>
-						<option value="Unit 5">Unit 5</option>
-					</select>
-				</div>
-			</div>
-			<div class="form-group">
-				<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
-					<option value="0">Approximate Order Value (RS) </option>
-					<option value="5000.22">5000.22</option>
-					<option value="5440.26">5440.26</option>
-					<option value="7400.29">7400.29</option>
-					<option value="7440.4">7440.4</option>
-					<option value="9940.45">9940.45</option>
-				</select>
-			</div>
-			<div class="form-group">
-				<label>Usage</label>
-				<div class="checkbox col-md-4 col-xs-12">
-					<label>
-						<input type="checkbox" name="usage[]" value="Flooring">Flooring
-					</label>
-				</div>
-				<div class="checkbox col-md-4 col-xs-12 find_other">
-					<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
-				</div>
-			</div>
-			<div class="form-group">
-				<label>Converage area(application)</label>
-				<div class="checkbox col-md-4 col-xs-12">
-					<label>
-					<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
-					</label>
-				</div>
-				<div class="checkbox col-md-4 col-xs-12 find_other">
-					<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
-				</div>
-			</div>
-			<div class="col-md-12 help_submit">
-				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
-			</div>
-			<button type="button" class="close fadeandscale_three_close" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-			</button>
-		</form>
-	</div>
-</div>
 <script type="text/javascript">
 $('ul.filter-menu li').click(function(){
 	var filter=[];	
@@ -154,5 +87,5 @@ $('#button-filter').on('click', function(e) {
 		url += '&product_filter=' + product_filter_val;
 	}
 	location = '<?php echo $action; ?>' + url;
-});function submit_requirement(){	$.ajax({		type: 'POST',		url: 'index.php?route=product/category/submitRequirement',		data: $('#requirement_form').serialize(),		beforeSend: function() {			$('#help_submit_button').attr('disabled', true);			$('#help_submit_button').text('loading...');					},		complete: function() {			$('#help_submit_button').attr('disabled', false);			$('#help_submit_button').text('Submit Your Requirment');		},		success: function(data) {			$('.alert').remove();			if (data['error']) {				console.log(data['error']);				$.each(data['error'] , function(i, val) { 				  $('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');				});							}			if (data['success']) {				location.reload();			}		}	});}
+});
 </script>
