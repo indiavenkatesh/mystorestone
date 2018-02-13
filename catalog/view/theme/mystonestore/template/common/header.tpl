@@ -68,7 +68,7 @@
           
             <li><a href="index.php?route=product/category&path=20">Products</a> </li>
             
-            <li><a href="index.php?route=information/information&information_id=7">24x7 Customer Care </a> </li>
+            <li><a href="index.php?route=information/contact">24x7 Customer Care </a> </li>
 			<?php if($seller_social_site!=''){ ?>
 			<li><a href="<?php echo $seller_social_site;?>">Social Site</a> </li>
 			<?php } ?>

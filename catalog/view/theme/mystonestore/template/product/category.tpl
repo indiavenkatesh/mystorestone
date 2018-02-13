@@ -2,7 +2,7 @@
 <link type="text/css" rel="stylesheet" media="all" href="chat/css/chat.css" />
 <div class="container">
 <div id="tabs-container" style="padding: 0;">
-  <?php echo str_replace('<aside id="column-left" class="col-sm-3 hidden-xs">','<aside id="column-left" class="col-lg-3 col-sm-4 hidden-xs">',$column_left); ?>
+  <?php echo $column_left; ?>
   <div class="tab  col-lg-9 col-sm-8" style="padding: 0;">     
    <div id="tab-1" class="tab-content">			
    <!--  <?php echo $content_top; ?>
@@ -159,7 +159,8 @@ $('.chat_sellers').click(function(e){
 </script>
 <?php } ?>
 <script>
-$("#scale-slider")
+jQuery(document).ready(function($){
+	$("#scale-slider")
 	.slider({
 	min: <?php echo min($price_calc); ?> ,
 			max: <?php echo max($price_calc); ?> ,
@@ -174,6 +175,8 @@ $("#scale-slider")
 	})
 
 	.slider("float");
+});
+
 </script>
 <?php if($logged){ ?>
 <script type="text/javascript" src="chat/js/catgchat.js"></script>
