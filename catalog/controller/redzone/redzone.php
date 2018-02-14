@@ -12,6 +12,13 @@ class ControllerRedzoneRedzone extends Controller {
 		} else {
 			$_SESSION['chat_username'] = $this->session->data['customer_id'];
 		}
+		$this->load->model('account/catalog/seller');
+		$seller_info = $this->model_account_catalog_seller->getSeller($this->session->data['customer_id']);
+
+		if(!isset($seller_info['is_paid']) || $seller_info['is_paid'] == 0) {
+			$this->response->redirect($this->url->link('simple_blog/article', 'token=' . $this->session->data['token'] , true));
+		}
+
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			$data = $this->request->post;
 			$data['added_by'] =  $this->customer->isLogged();

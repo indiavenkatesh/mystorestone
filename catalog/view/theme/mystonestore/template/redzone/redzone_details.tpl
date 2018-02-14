@@ -126,12 +126,8 @@
 </div></div>
 <?php if(!$logged){ ?>
 <script>
-$('#product_help').removeClass('fadeandscale_three_open');
+
 $('.chat_sellers').removeAttr('onclick');
-$('#product_help').click(function(e){
-	e.preventDefault();
-	window.location = 'index.php?route=account/login';
-});
 $('.chat_sellers').click(function(e){
 	e.preventDefault();
 	window.location = 'index.php?route=account/login';

@@ -130,7 +130,13 @@
                <div class="nav_collapse">
         <ul class="nav navbar-nav navbar-left">
             <li id="mygroup_list" class="dropdown">
-                <a href="index.php?route=redzone/redzone" role="button" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">Blacklist sellers <?php if($new_blacklist!=0){ ?><span style="background: #961112;padding: 1px 8px;color: #fff;border-radius: 100%;font-size: 13px;font-weight: bold;"><?php echo $new_blacklist; ?></span><?php } ?></a>
+				<a 
+				<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+				href="index.php?route=redzone/redzone" 
+				<?php } else { ?>
+				href="index.php?route=redzone/redzone" 
+				<?php } ?>
+                role="button" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">Blacklist sellers <?php if($new_blacklist!=0){ ?><span style="background: #961112;padding: 1px 8px;color: #fff;border-radius: 100%;font-size: 13px;font-weight: bold;"><?php echo $new_blacklist; ?></span><?php } ?></a>
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">My Groups</a>
                 <ul class="dropdown-menu">
 				<?php if($user_group_lists_in){?>
@@ -143,16 +149,20 @@
                 </ul>
             </li>
 
-           <!-- <li class="dropdown">
+           <?php /** <li class="dropdown">
                 <a href="#addgroups" class="dropdown-toggle fancybox"><img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">Add Groups</a>
-            </li> -->
+            </li> **/ ?>
 			
 			<li id="joingroup_list" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/insight.png">Join Groups</a>
                 <ul class="dropdown-menu">
 				<?php if($group_lists){?>
                    <?php foreach($group_lists as $group_rows){?>
+				   <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
                     <li class="join_group_lists_li<?php echo $group_rows['social_group_id'];?>"><a class="fancybox" href="#join_group_lists<?php echo $group_rows['social_group_id'];?>"><?php echo $group_rows['name'];?></a></li>
+					<?php } else { ?>
+					<li><a class="fancybox" href="#paidtocontinue"><?php echo $group_rows['name'];?></a></li>
+					<?php } ?>
 				   <?php } ?>
 				<?php } else { ?>
 					<li class="group_lists_li">No Groups found</li>
@@ -193,7 +203,7 @@
 
       <div class="col-sm-8 col-lg-7 col-xs-12 post_part">
 <?php
-if(!empty($check_availability))
+if(!empty($check_availability) && isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1)
 {
 ?>
          <div class="latest_post add_post">
@@ -217,7 +227,7 @@ if(!empty($check_availability))
 
                     <div class="post_area col-sm-10 col-lg-10">
 					<form name="add_post" method="post" action="<?php echo $action;?>">
-                                        <input type="hidden" name="social_group_id" id="social_group_id" value="<?php if(isset($_GET['filter_group'])){ echo $_GET['filter_group']; } ?>">
+                    <input type="hidden" name="social_group_id" id="social_group_id" value="<?php if(isset($_GET['filter_group'])){ echo $_GET['filter_group']; } ?>">
                       <textarea class="form-control" name="comment" placeholder="What’s on your mind?"></textarea>
                        <button type="submit" class="btn btn-warning">post <span class="glyphicon glyphicon-send"></span></button>
 					</form>
@@ -319,18 +329,35 @@ if(!empty($check_availability))
 
                          </div>
                          <div class=" col-sm-3 col-lg-3">
-                          <a href="#sharepost<?php echo $article['simple_blog_article_id']; ?>" class="share_article fancybox"><img src="catalog/view/theme/mystonestore/img/icons/share.png"><span>Share</span></a>
+						 <a 
+						 <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+						 href="#sharepost<?php echo $article['simple_blog_article_id']; ?>"
+						 <?php } else { ?>
+						 href="#paidtocontinue"
+						 <?php } ?>
+                           class="share_article fancybox"><img src="catalog/view/theme/mystonestore/img/icons/share.png"><span>Share</span></a>
                          </div>
 						 <?php if($article['author_user_id'] != $userid){ ?>
 						 <div class=" col-sm-3 col-lg-2">
-                              <a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $article['author_user_id']; ?>','<?php echo $article['author_name']; ?>')" class="chat_article"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Chat</span></a>
+						 <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+						 <a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $article['author_user_id']; ?>','<?php echo $article['author_name']; ?>')" class="chat_article">
+						 <?php } else { ?>
+						 <a href="#paidtocontinue" class="chat_article fancybox"
+						 <?php } ?>
+                         <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Chat</span></a>
                          </div>
 						 <?php } ?>
                     </div>
                    <div class="share_groups col-sm-3 col-lg-2 col-xs-10">
                          <?php if($article['same_user']!=1){ ?>
                              <div class="share_groups_inner">
-                                  <a href="#spampost<?php echo $article['simple_blog_article_id']; ?>" class="share_article fancybox"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Spam</span></a>
+							 	<a 
+								<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+								href="#spampost<?php echo $article['simple_blog_article_id']; ?>" 
+								<?php } else { ?>
+								href="#paidtocontinue" 
+								<?php } ?>
+                                 class="share_article fancybox"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Spam</span></a>
                              </div>
                          <?php } ?>
                     </div>
@@ -414,6 +441,30 @@ if(!empty($check_availability))
 					</div>	   
 			</div>
 		</div>
+
+		<div class="well read_more_section" id="commentpost<?php echo $article['simple_blog_article_id']; ?>">
+			<div class="pop_well">			  
+			 <div class="row">
+					<div id="comment_list<?php echo $article['simple_blog_article_id']; ?>">
+					<?php if($article['comments']) { ?>
+						<?php foreach ($article['comments'] as $comment) { ?>
+						<div class="user_db col-sm-2 col-lg-2">
+						   <img src="<?php echo $comment['cthumb']; ?>" />
+						</div>		
+						<div class="user_name col-sm-10 col-lg-10">
+						  <h4>@<?php echo $comment['author']; ?></h4>
+						  <span><?php echo $comment['date_added']; ?></span>
+						</div>
+						<div class="user_content col-sm-12 col-lg-12">
+						<p><?php echo $comment['comment']; ?></p>
+						</div>
+						<?php } ?>	
+					<?php } ?>
+					</div>												
+					</div>	   
+			</div>
+		</div>
+		<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 		<div class="well read_more_section" id="sharepost<?php echo $article['simple_blog_article_id']; ?>">
 			<div class="pop_well">			  
 			 <div class="row">
@@ -452,28 +503,6 @@ if(!empty($check_availability))
 					</div>	   
 			</div>
 		</div>
-		<div class="well read_more_section" id="commentpost<?php echo $article['simple_blog_article_id']; ?>">
-			<div class="pop_well">			  
-			 <div class="row">
-					<div id="comment_list<?php echo $article['simple_blog_article_id']; ?>">
-					<?php if($article['comments']) { ?>
-						<?php foreach ($article['comments'] as $comment) { ?>
-						<div class="user_db col-sm-2 col-lg-2">
-						   <img src="<?php echo $comment['cthumb']; ?>" />
-						</div>		
-						<div class="user_name col-sm-10 col-lg-10">
-						  <h4>@<?php echo $comment['author']; ?></h4>
-						  <span><?php echo $comment['date_added']; ?></span>
-						</div>
-						<div class="user_content col-sm-12 col-lg-12">
-						<p><?php echo $comment['comment']; ?></p>
-						</div>
-						<?php } ?>	
-					<?php } ?>
-					</div>												
-					</div>	   
-			</div>
-		</div>
 		<div class="well read_more_section" id="spampost<?php echo $article['simple_blog_article_id']; ?>">
 			<div class="pop_well">			  
 			 <div class="row">
@@ -493,11 +522,12 @@ if(!empty($check_availability))
 					</div>	   
 			</div>
 		</div>
+		<?php } ?>
      <?php } } ?>
 
 
 
-
+<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 <div class="well" id="video_upload">
 <div class="pop_well">
 
@@ -603,7 +633,7 @@ if(!empty($check_availability))
 
  </div>
    
-</div>
+</div><?php /** ?>
 <div class="well read_more_section" id="addgroups">
 	<div class="pop_well">			  
 	 <div class="row">
@@ -624,7 +654,8 @@ if(!empty($check_availability))
 				</form>
 			</div>	   
 	</div>
-</div>
+</div> <?php **/ ?>
+<?php } ?>
 <?php if($user_group_lists){?>
    <?php foreach($user_group_lists as $group_rows){?>
 	<div class="well read_more_section" id="group_lists<?php echo $group_rows['social_group_id'];?>">
@@ -703,6 +734,24 @@ if(!empty($check_availability))
    <?php } ?>
 <?php } ?>
 
+<a href="#paidtocontinue" class="fancybox" id="openpaidtocontinue"></a>
+		<div class="well read_more_section" id="paidtocontinue">
+			<div class="pop_well">			  
+			 <div class="row">
+						<div class="user_db col-sm-2 col-lg-2">
+						   <img src="<?php echo $thumb;?>" />
+						</div>		
+						<div class="user_name col-sm-10 col-lg-10">
+						  <h4>Access denied!</h4>
+						</div>
+						<div class="user_content col-sm-12 col-lg-12">
+							<p>&nbsp;</p>
+							<p>Paid members only able to access this action. Please contact administrator to procedd further.</p>							
+						</div>
+					</div>	   
+			</div>
+		</div>
+
  <script>
         
       $('.fancybox').fancybox();
@@ -712,6 +761,7 @@ if(!empty($check_availability))
     </script>
 <script>
 function add_likes(values,type){
+	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 	var urls = 'action=like&article_id='+values;
 	var liked_article = $('#liked_article'+values);
 	var unliked_article = $('#unliked_article'+values);
@@ -734,6 +784,9 @@ function add_likes(values,type){
 		   console.log(textStatus, errorThrown);
 		}
 	});
+	<?php } else { ?>
+	$("#openpaidtocontinue").trigger('click');
+	<?php } ?>
 }
 function post_delete(value){
 	if(confirm('ARE YOU SURE DO  YOU WANT TO REMOVE')){
@@ -810,6 +863,7 @@ $('.progress').hide();
   
 }
 function comment_article(values){
+	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 	var comment_text = $('#comment_text'+values).val();
 	var name = '<?php echo $username;?>';
 	var user_id = '<?php echo $userid;?>';
@@ -841,8 +895,12 @@ function comment_article(values){
 			}
 		}
 	});
+	<?php } else { ?>
+	$("#openpaidtocontinue").trigger('click');
+	<?php } ?>
 }
 function spam_article(values){
+	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 	var spam_text = $('#spam_text'+values).val();
 	var name = '<?php echo $username;?>';
 	var user_id = '<?php echo $userid;?>';
@@ -873,6 +931,9 @@ function spam_article(values){
 			}
 		}
 	});
+	<?php } else { ?>
+	$("#openpaidtocontinue").trigger('click');
+	<?php } ?>
 }
 function group_delete(values){
 	$.ajax({

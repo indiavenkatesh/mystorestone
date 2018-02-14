@@ -49,7 +49,8 @@ class ControllerCommonSocialFooter extends Controller {
 		$data['telephone'] = $this->config->get('config_telephone');
 
 		$data['powered'] = sprintf($this->language->get('text_powered'), $this->config->get('config_name'), date('Y', time()));
-		
+		if(isset($this->session->data['customer_id']))
+{
 		$userid = $data['userid'] = $this->session->data['customer_id'];
 		$data['users_lists'] = $this->model_simple_blog_groups->getUsersList($userid);
 		$data['group_lists'] = $this->model_simple_blog_groups->getAllgroups($userid);
@@ -59,6 +60,7 @@ class ControllerCommonSocialFooter extends Controller {
 				$data['group_lists_members'][$group_lists_row['social_group_id']] = $this->model_simple_blog_groups->getGroupusers($group_lists_row['social_group_id']);
 			}
 		}
+	}
 		
 		// Whos Online
 		if ($this->config->get('config_customer_online')) {

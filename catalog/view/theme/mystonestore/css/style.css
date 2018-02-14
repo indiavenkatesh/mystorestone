@@ -346,7 +346,7 @@
       font-family: "Roboto-Regular";
       margin: 0 0 10px;
   }
-  .panel-default > .panel-heading,.alert-danger,.btn-info,.alert-success {
+  .panel-default > .panel-heading,.btn-info,.alert-success {
       background-color: #7FB546;
       border-color: #7FB546;
       color: #fff;

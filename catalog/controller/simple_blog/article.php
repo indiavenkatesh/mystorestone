@@ -77,6 +77,8 @@ if (isset($this->request->get['filter_group'])) {
 			$this->load->model('account/catalog/seller');
 			$seller_info = $this->model_account_catalog_seller->getSeller($data['userid']);
 
+			$data['current_seller_info'] = $seller_info;
+
 			if (!empty($seller_info) && is_file(DIR_IMAGE . $seller_info['logo'])) {
 				$data['thumb'] = $this->model_tool_image->resize($seller_info['logo'], 50, 50);
 			} else {

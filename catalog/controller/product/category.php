@@ -508,6 +508,8 @@ class ControllerProductCategory extends Controller {
 
 		if ($this->request->server['REQUEST_METHOD'] == 'POST') {
 
+			$json['post'] = $this->request->post;
+
 			if ((utf8_strlen($this->request->post['product_name']) < 3) || (utf8_strlen($this->request->post['product_name']) > 1000)) {
 				$json['error']['product_name'] = "Please enter the Product and Service Name";
 			}
@@ -520,12 +522,14 @@ class ControllerProductCategory extends Controller {
 				$json['error']['unit'] = "Please select the Unit";
 			}
 			
-			if (isset($this->request->post['social_groups']) && empty($this->request->post['social_groups']) 
+			if ((!isset($this->request->post['social_groups']) || empty($this->request->post['social_groups'])) 
 					&& utf8_strlen($this->request->post['other_group_text']) == 0) {
-				$json['error']['usage'] = "Please choose the atleaset one Social Group or Enter in others options";
+				$json['error']['other_group_text'] = "Please choose the atleaset one Social Group or Enter in others options";
 			}
 
-			if (!isset($json['error']) && isset($this->request->post['social_groups']) && empty($this->request->post['social_groups'])) {
+			$paid_sellers = array();
+			$this->load->model('account/catalog/seller');
+			if (!isset($json['error'])) {
 				$message = '';
 				$mail = new Mail();
 				$mail->protocol = $this->config->get('config_mail_protocol');
@@ -535,14 +539,18 @@ class ControllerProductCategory extends Controller {
 				$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
 				$mail->smtp_port = $this->config->get('config_mail_smtp_port');
 				$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
-				$this->load->model('account/catalog/seller');
-				$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
+
 				$email[] = $this->config->get('config_email');
-				if($sellerdetails){
-					foreach($sellerdetails as $sellerdetailsrow){
-						$email[] = $sellerdetailsrow['email'];
-					}
-				} 
+				if(isset($this->request->post['social_groups']) && !empty($this->request->post['social_groups'])) {
+					$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
+					$json['sellers'] = $sellerdetails;
+					if($sellerdetails){
+						foreach($sellerdetails as $sellerdetailsrow) {
+							$paid_sellers[] = $sellerdetailsrow;
+							$email[] = $sellerdetailsrow['email'];
+						}
+					} 
+				}
 				$customer_email = $this->customer->getEmail();
 				$mail->setTo($email);					
 				$mail->setFrom($customer_email);
@@ -564,9 +572,13 @@ class ControllerProductCategory extends Controller {
 					$message .= 'Other Option: '.$this->request->post['other_group_text'].'<br/>';
 				}
 				$mail->setHtml($message);
-				$mail->send();
-				$json['success'] = "Enquiry has been submitted successfully";				
+				$mail->send();			
 			}
+
+			if (!isset($json['error'])) {
+				$this->model_account_catalog_seller->saveProductEnquires($this->request->post, (int)$this->session->data['user_id'], $paid_sellers);
+				$json['success'] = "Enquiry has been submitted successfully";
+			}				
 		}
 
 		$this->response->setOutput(json_encode($json));

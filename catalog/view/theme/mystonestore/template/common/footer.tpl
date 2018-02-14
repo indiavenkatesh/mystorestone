@@ -148,6 +148,7 @@
 
 </div>
 
+<?php if(isset($userid)) { ?>
 <div class="well" id="fadeandscale_three">   
 	<h3>We Are Hear To Help !</h3>   
 	<div class="helpingforms">
@@ -160,7 +161,6 @@
 				<div class="input-group my-group form_quantity_group">
 					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
 					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
-						<option value="0">Unit</option>
 						<option value="Unit 1">Unit 1</option>
 						<option value="Unit 2">Unit 2</option>
 						<option value="Unit 3">Unit 3</option>
@@ -196,14 +196,15 @@
 	</div>
 </div>
 
-
+<?php } ?>
 
 
 <script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
 
 <script type="text/javascript">
-
+	<?php if(isset($userid)) { ?>
 	function submit_requirement(){
+		var form_key
 		$.ajax({
 			type: 'POST',
 			url: 'index.php?route=product/category/submitRequirement',
@@ -217,20 +218,36 @@
 				$('#help_submit_button').text('Submit Your Requirment');
 			},
 			success: function(data) {
-				$('.alert').remove();
+				data = JSON.parse(data);
+				$("#requirement_form").find('.alert').each(function(){$(this).remove()});
+				$("#requirement_form").find('.error_message').each(function(){$(this).remove()});
 				if (data['error']) {
-					$.each(data['error'] , function(i, val) {
-						$('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');
+					$("<div class=\"alert alert-danger\"></div>").prependTo($("#requirement_form")).html('Please check the error messages below!');
+					$("#requirement_form").find(":input").each(function(){
+						if(data['error'][this.name]) {
+							var msg = data['error'][this.name];
+							var $parent = $(this).parents('.form-group');
+							var $em = $("<div class=\"error_message text-danger\"></div>").appendTo($parent);
+							$em.css('clear', 'both');
+							$em.html(msg);
+						}
 					});
 				}
 				if (data['success']) {
-					location.reload();
+					$("<div class=\"alert alert-success\"></div>").prependTo($("#requirement_form")).html(data['success']);
 				}
 			}
 		});
 	}
-
+	<?php } ?>
   	$(document).ready(function () {
+		<?php if(!isset($userid)) { ?>
+		$('#product_help').removeClass('fadeandscale_three_open');
+		$('#product_help').click(function(e){
+			e.preventDefault();
+			window.location = 'index.php?route=account/login';
+		});
+		<?php } ?>
 		$('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});
 
 		$('.testimonials-slider').bxSlider({
@@ -244,7 +261,6 @@
 		});
 	});
 </script>
-<script>$(document).ready(function () });</script>
 
 <?php if(isset($userid)) { ?>
 <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">

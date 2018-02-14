@@ -19,8 +19,8 @@ class ModelAccountCatalogSeller extends Model {
 	
 	public function getPaidSellerDetails($groupIds = array()) {
 		$query = $this->db->query(
-			"SELECT DISTINCT * FROM " . DB_PREFIX . "seller as s ".
-			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id == sgu.social_group_user_id".
+			"SELECT s.* FROM " . DB_PREFIX . "seller as s ".
+			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id = sgu.social_group_user_id ".
 			"WHERE status = 1 and is_paid = 1 and approved=1 AND sgu.social_group_id IN (" . JOIN(",", $groupIds) . ")"
 		);
 
@@ -96,5 +96,29 @@ class ModelAccountCatalogSeller extends Model {
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "seller_transaction WHERE order_id = '" . (int)$order_id . "'");
 
 		return $query->row['total'];
+	}
+
+	public function saveProductEnquires($data, $userId, $paid_sellers) {
+		$enquiry_qry = "INSERT INTO " . DB_PREFIX . "product_enquries VALUES ". 
+			"(null, '".$data['product_name']."', '".$data['product_qty']."', '".$data['unit']."', '".$data['other_group_text']."', NOW(), ".$userId.")";
+		$this->db->query($enquiry_qry);
+
+		$enquiry_id = $this->db->getLastId();
+
+		if(isset($data['social_groups']) && !empty($data['social_groups'])) {
+			$enquiry_groups_qry = array();
+			foreach($data['social_groups'] as $groupd_id) {
+				$enquiry_groups_qry[] = "(".$enquiry_id.", ".$groupd_id.")";
+			}
+			$this->db->query("INSERT INTO " . DB_PREFIX . "product_enquries_groups VALUES " . join(",", $enquiry_groups_qry));
+		}
+
+		if(!empty($paid_sellers)) {
+			$enquiry_mails = array();
+			foreach($paid_sellers as $seller) {
+				$enquiry_mails[] = "(".$enquiry_id.", ".$seller['seller_id'].", '".$seller['email']."')";
+			}
+			$this->db->query("INSERT INTO " . DB_PREFIX . "product_enquries_mail VALUES " . join(",", $enquiry_mails));
+		}
 	}
 }
