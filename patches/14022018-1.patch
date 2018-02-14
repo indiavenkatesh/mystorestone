@@ -1,0 +1,2051 @@
+From a98b0b531489372cdf8fe8d5f9ed3d3aac47f77d Mon Sep 17 00:00:00 2001
+From: Venkatesh <venki88.php@gmail.com>
+Date: Mon, 12 Feb 2018 10:24:17 +0530
+Subject: [PATCH 1/5] Fix 12-02-2018
+
+---
+ catalog/model/account/customer.php                 |  13 ++
+ catalog/model/simple_blog/article.php              |   2 +-
+ catalog/model/total/coupon.php                     |   4 +-
+ catalog/view/theme/mystonestore/css/style.css      |  24 ++-
+ .../theme/mystonestore/template/checkout/cart.tpl  |  14 +-
+ .../theme/mystonestore/template/common/footer.tpl  |  41 ++++-
+ .../mystonestore/template/common/socialfooter.tpl  |  41 ++++-
+ .../mystonestore/template/module/featured.tpl      |  39 +----
+ .../theme/mystonestore/template/module/filter.tpl  | 166 +++++++++++++++------
+ .../mystonestore/template/product/category.tpl     |  13 +-
+ .../mystonestore/template/redzone/redzone.tpl      |  30 ----
+ .../template/redzone/redzone_details.tpl           |  30 ----
+ .../catalog/controller/account/account.php         |   8 +-
+ 13 files changed, 249 insertions(+), 176 deletions(-)
+
+diff --git a/catalog/model/account/customer.php b/catalog/model/account/customer.php
+index 0633435..573401f 100644
+--- a/catalog/model/account/customer.php
++++ b/catalog/model/account/customer.php
+@@ -237,4 +237,17 @@ class ModelAccountCustomer extends Model {
+ 
+ 		return $query->row;
+ 	}
++	
++	public function getOnlinePaidCustomers($customer_ids = array()) {
++		$sql = "SELECT co.customer_id FROM " . DB_PREFIX . "customer_online co";
++		if($customer_ids) {
++			$sql .= " WHERE co.customer_id IN (" . join(", ", $customer_ids) . ")";
++		}
++		$query = $this->db->query($sql);
++		$onlineCustomerIds = array();
++		foreach($query->rows as $row) {
++			$onlineCustomerIds[] = $row['customer_id'];
++		}
++		return $onlineCustomerIds;
++	}
+ }
+diff --git a/catalog/model/simple_blog/article.php b/catalog/model/simple_blog/article.php
+index e644b13..48f999e 100644
+--- a/catalog/model/simple_blog/article.php
++++ b/catalog/model/simple_blog/article.php
+@@ -28,7 +28,7 @@
+ 		
+ 		public function getArticles($data = array()) {
+ 			
+-			$sql = "SELECT sba.*, sbad.*, sbau.name AS author_name, sbau.author_user_id AS author_user_id FROM `" . DB_PREFIX . "simple_blog_article` sba LEFT JOIN `" . DB_PREFIX . "simple_blog_article_description` sbad ON(sba.simple_blog_article_id=sbad.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_article_to_store` sbas ON(sba.simple_blog_article_id=sbas.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_author` sbau ON(sba.simple_blog_author_id=sbau.simple_blog_author_id) WHERE sba.status=1 AND sbau.status=1 AND sbas.store_id='" . (int)$this->config->get('config_store_id') . "' AND sbad.language_id='" . (int)$this->config->get('config_language_id') . "'";
++			$sql = "SELECT sba.*, sbad.*, CASE WHEN co.firstname IS NULL THEN sbau.name ELSE CONCAT(co.firstname, ' ', co.lastname) END AS author_name, sbau.author_user_id AS author_user_id FROM `" . DB_PREFIX . "simple_blog_article` sba LEFT JOIN `" . DB_PREFIX . "simple_blog_article_description` sbad ON(sba.simple_blog_article_id=sbad.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_article_to_store` sbas ON(sba.simple_blog_article_id=sbas.simple_blog_article_id) LEFT JOIN `" . DB_PREFIX . "simple_blog_author` sbau ON(sba.simple_blog_author_id=sbau.simple_blog_author_id) LEFT JOIN `" . DB_PREFIX . "customer` co ON(sbau.simple_blog_author_id=co.customer_id)  WHERE sba.status=1 AND sbau.status=1 AND sbas.store_id='" . (int)$this->config->get('config_store_id') . "' AND sbad.language_id='" . (int)$this->config->get('config_language_id') . "'";
+ 			
+ 			if(!empty($data['blog_search'])) {
+ 				$sql .= " AND LCASE(sbad.description) LIKE '%" . $this->db->escape(utf8_strtolower($data['blog_search'])) . "%'";
+diff --git a/catalog/model/total/coupon.php b/catalog/model/total/coupon.php
+index 881e565..305e86e 100644
+--- a/catalog/model/total/coupon.php
++++ b/catalog/model/total/coupon.php
+@@ -3,7 +3,7 @@ class ModelTotalCoupon extends Model {
+ 	public function getCoupon($code, $seller_id) {
+ 		$status = true;
+ 
+-		$coupon_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "coupon` WHERE code = '" . $this->db->escape($code) . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND status = '1' AND seller_id = '" . (int)$seller_id . "'");
++		$coupon_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "coupon` WHERE code = '" . $this->db->escape($code) . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND status = '1'");
+ 
+ 		if ($coupon_query->num_rows) {
+ 			if ($coupon_query->row['total'] > $this->cart->getSubTotal()) {
+@@ -99,7 +99,7 @@ class ModelTotalCoupon extends Model {
+ 		if (isset($this->session->data['coupon'])) {
+ 			$this->load->language('total/coupon');
+ 
+-			$coupon_info = $this->getCoupon($this->session->data['coupon'], $total['seller_id']);
++			$coupon_info = $this->getCoupon($this->session->data['coupon'], isset($total['seller_id'])?$total['seller_id']:0);
+ 
+ 			if ($coupon_info) {
+ 				$discount_total = 0;
+diff --git a/catalog/view/theme/mystonestore/css/style.css b/catalog/view/theme/mystonestore/css/style.css
+index f2579bb..851e1d4 100644
+--- a/catalog/view/theme/mystonestore/css/style.css
++++ b/catalog/view/theme/mystonestore/css/style.css
+@@ -649,9 +649,7 @@
+   .city span.input-group-addon {
+       background: #1f92c4 none repeat scroll 0 0;
+   }
+-  label.control-label {
+-      color: #fff;
+-  }
++
+   .city {
+       clear: both;
+       float: left;
+@@ -890,9 +888,6 @@
+       font-family: 'Roboto-bold';
+       padding: 0;
+   }
+-  .btn.btn-primary {
+-      margin-top: 10px;
+-  }
+   #content h2, #content h1, #content h3, #content h4{font-family: 'Roboto-bold';}
+   .content_box h4{ margin: 0; padding: 0; min-height: 30px;}
+   .content_box > p {
+@@ -1442,4 +1437,19 @@ li.cart_header button.btn.btn-lg.btn-block{float: none;}
+ .table_inner > table tr td {
+     padding: 10px 10px;
+     text-align: center;
+-}
+\ No newline at end of file
++}
++.p-0 {padding: 0;}.p-1 {padding: 1em;}.p-2 {padding: 2em;}.p-3 {padding: 3em;}.p-4 {padding: 4em;}.p-5 {padding: 5em;}
++.pl-0 {padding-left: 0;}.pl-1 {padding-left: 1em;}.pl-2 {padding-left: 2em;}.pl-3 {padding-left: 3em;}.pl-4 {padding-left: 4em;}.pl-5 {padding-left: 5em;}
++.pr-0 {padding-right: 0;}.pr-1 {padding-right: 1em;}.pr-2 {padding-right: 2em;}.pr-3 {padding-right: 3em;}.pr-4 {padding-right: 4em;}.pr-5 {padding-right: 5em;}
++.pt-0 {padding-top: 0;}.pt-1 {padding-top: 1em;}.pt-2 {padding-top: 2em;}.pt-3 {padding-top: 3em;}.pt-4 {padding-top: 4em;}.pt-5 {padding-top: 5em;}
++.pb-0 {padding-bottom: 0;}.pb-1 {padding-bottom: 1em;}.pb-2 {padding-bottom: 2em;}.pb-3 {padding-bottom: 3em;}.pb-4 {padding-bottom: 4em;}.pb-5 {padding-bottom: 5em;}
++.px-0 {padding-left: 0;padding-right: 0;}.pl-1 {padding-left: 1em;padding-right: 1em;}.pl-2 {padding-left: 2em;padding-right: 2em;}.pl-3 {padding-left: 3em;padding-right: 3em;}.pl-4 {padding-left: 4em;padding-right: 4em;}.pl-5 {padding-left: 5em;padding-right: 5em;}
++.py-0 {padding-top: 0;padding-bottom: 0;}.pl-1 {padding-top: 1em;padding-bottom: 1em;}.pl-2 {padding-top: 2em;padding-bottom: 2em;}.pl-3 {padding-top: 3em;padding-bottom: 3em;}.pl-4 {padding-top: 4em;padding-bottom: 4em;}.pl-5 {padding-top: 5em;padding-bottom: 5em;}
++
++.m-0 {margin: 0;}.m-1 {margin: 1em;}.m-2 {margin: 2em;}.m-3 {margin: 3em;}.m-4 {margin: 4em;}.m-5 {margin: 5em;}
++.ml-0 {margin-left: 0;}.ml-1 {margin-left: 1em;}.ml-2 {margin-left: 2em;}.ml-3 {margin-left: 3em;}.ml-4 {margin-left: 4em;}.ml-5 {margin-left: 5em;}
++.mr-0 {margin-right: 0;}.mr-1 {margin-right: 1em;}.mr-2 {margin-right: 2em;}.mr-3 {margin-right: 3em;}.mr-4 {margin-right: 4em;}.mr-5 {margin-right: 5em;}
++.mt-0 {margin-top: 0;}.mt-1 {margin-top: 1em;}.mt-2 {margin-top: 2em;}.mt-3 {margin-top: 3em;}.mt-4 {margin-top: 4em;}.mt-5 {margin-top: 5em;}
++.mb-0 {margin-bottom: 0;}.mb-1 {margin-bottom: 1em;}.mb-2 {margin-bottom: 2em;}.mb-3 {margin-bottom: 3em;}.mb-4 {margin-bottom: 4em;}.mb-5 {margin-bottom: 5em;}
++.mx-0 {margin-left: 0;margin-right: 0;}.ml-1 {margin-left: 1em;margin-right: 1em;}.ml-2 {margin-left: 2em;margin-right: 2em;}.ml-3 {margin-left: 3em;margin-right: 3em;}.ml-4 {margin-left: 4em;margin-right: 4em;}.ml-5 {margin-left: 5em;margin-right: 5em;}
++.my-0 {margin-top: 0;margin-bottom: 0;}.ml-1 {margin-top: 1em;margin-bottom: 1em;}.ml-2 {margin-top: 2em;margin-bottom: 2em;}.ml-3 {margin-top: 3em;margin-bottom: 3em;}.ml-4 {margin-top: 4em;margin-bottom: 4em;}.ml-5 {margin-top: 5em;margin-bottom: 5em;}
+\ No newline at end of file
+diff --git a/catalog/view/theme/mystonestore/template/checkout/cart.tpl b/catalog/view/theme/mystonestore/template/checkout/cart.tpl
+index 1d85a09..096691b 100644
+--- a/catalog/view/theme/mystonestore/template/checkout/cart.tpl
++++ b/catalog/view/theme/mystonestore/template/checkout/cart.tpl
+@@ -116,10 +116,16 @@
+           </table>
+         </div>
+       </div>
+-      <div class="buttons">
+-        <div class="pull-left"><a href="<?php echo $continue; ?>" class="btn btn-default"><?php echo $button_shopping; ?></a></div>
+-      </div>
+-      <?php echo $content_bottom; ?></div>
++	  <div class="row">
++		  <div class="buttons col-xs-12">
++			<div class="pull-left"><a href="<?php echo $continue; ?>" class="btn btn-default"><?php echo $button_shopping; ?></a></div>
++		  </div>
++	  </div>
++      <?php echo $content_bottom; ?>
++	  <div class="mt-3">
++		<?php foreach ($modules as $module) echo $module; ?>
++	  </div>
++	</div>
+     <?php echo $column_right; ?></div>
+ </div>
+ <?php echo $footer; ?> 
+diff --git a/catalog/view/theme/mystonestore/template/common/footer.tpl b/catalog/view/theme/mystonestore/template/common/footer.tpl
+index f3a2b51..97d9313 100644
+--- a/catalog/view/theme/mystonestore/template/common/footer.tpl
++++ b/catalog/view/theme/mystonestore/template/common/footer.tpl
+@@ -205,7 +205,7 @@
+ 					<li>
+ 					<img class="profile-picture" src="http://placehold.it/50/55C1E7/fff&text=<?php echo substr($group_lists_member['username'],0,2);?>">
+ 					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $group_lists_member['social_group_user_id'];?>','<?php echo $group_lists_member['username'];?>')"><?php echo $group_lists_member['username'];?></a>
+-					<div class="profile-status online"></div>
++					<div class="profile-status offline seller_status_<?php echo $group_lists_member['social_group_user_id'];?>" data-seller_id="<?php echo $group_lists_member['social_group_user_id'];?>"></div>
+ 					</li>
+ 					<?php } ?>
+ 					<?php } ?>
+@@ -221,6 +221,43 @@
+ </div>
+ </div>
+ </div>
+-
+ <?php } ?>
++
++<script>
++	jQuery(document).ready(function($){
++		function check_online_seller_status(){
++			var customer_ids = [];
++			$("[data-seller_id]").each(function(){
++				var $this = $(this);
++				var classList = this.className.split(/\s+/);
++				var seller_id = $(this).data('seller_id');
++				if(customer_ids.indexOf(seller_id) === -1) {				
++					customer_ids.push(seller_id);
++					$('.seller_status_'+seller_id).removeClass('online').addClass('offline');
++					$('.seller_status_p_'+seller_id).text('Offline');
++				}
++			});
++			
++			$.ajax({
++			  url: "index.php?route=account/account/checkstatus",
++			  type: "POST",
++			  data: {online_users: customer_ids},
++			  dataType: "json",
++			  success: function(data) {
++				var online_users = data['online_users'];
++				$.each(online_users, function(key,val){
++					$('.seller_status_'+val).removeClass('offline').addClass('online');
++					$('.seller_status_p_'+val).text('Online');
++				});
++			  },
++			  complete:function() {
++				setTimeout(function(){
++					check_online_seller_status()
++				}, 6000);
++			  }
++			});
++		}
++		check_online_seller_status();
++	});	
++</script>
+ </body></html>
+\ No newline at end of file
+diff --git a/catalog/view/theme/mystonestore/template/common/socialfooter.tpl b/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
+index 697ec80..1a4d432 100644
+--- a/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
++++ b/catalog/view/theme/mystonestore/template/common/socialfooter.tpl
+@@ -182,7 +182,7 @@
+ 
+  });
+ 
+-</script><script>$(document).ready(function () {    $('#fadeandscale_three,#fadeandscale_four').popup({        pagecontainer: '.container',        transition: 'all 0.3s'    });});</script>
++</script><script>$(document).ready(function () {    /**$('#fadeandscale_three,#fadeandscale_four').popup({        pagecontainer: '.container',        transition: 'all 0.3s'    });**/});</script>
+ <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
+ <div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth('friends')">
+ 	<div class="chatboxtitle">Members</div>
+@@ -204,7 +204,7 @@
+ 					<li>
+ 					<img class="profile-picture" src="http://placehold.it/50/55C1E7/fff&text=<?php echo substr($group_lists_member['username'],0,2);?>">
+ 					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $group_lists_member['social_group_user_id'];?>','<?php echo $group_lists_member['username'];?>')"><?php echo $group_lists_member['username'];?></a>
+-					<div class="profile-status online"></div>
++					<div class="profile-status offline seller_status_<?php echo $group_lists_member['social_group_user_id'];?>" data-seller_id="<?php echo $group_lists_member['social_group_user_id'];?>"></div>
+ 					</li>
+ 					<?php } ?>
+ 					<?php } ?>
+@@ -221,5 +221,42 @@
+ </div>
+ </div>
+ 
++<script>
++	jQuery(document).ready(function($){
++		function check_online_seller_status(){
++			var customer_ids = [];
++			$("[data-seller_id]").each(function(){
++				var $this = $(this);
++				var classList = this.className.split(/\s+/);
++				var seller_id = $(this).data('seller_id');
++				if(customer_ids.indexOf(seller_id) === -1) {				
++					customer_ids.push(seller_id);
++					$('.seller_status_'+seller_id).removeClass('online').addClass('offline');
++					$('.seller_status_p_'+seller_id).text('Offline');
++				}
++			});
++			
++			$.ajax({
++			  url: "index.php?route=account/account/checkstatus",
++			  type: "POST",
++			  data: {online_users: customer_ids},
++			  dataType: "json",
++			  success: function(data) {
++				var online_users = data['online_users'];
++				$.each(online_users, function(key,val){
++					$('.seller_status_'+val).removeClass('offline').addClass('online');
++					$('.seller_status_p_'+val).text('Online');
++				});
++			  },
++			  complete:function() {
++				setTimeout(function(){
++					check_online_seller_status()
++				}, 6000);
++			  }
++			});
++		}
++		check_online_seller_status();
++	});	
++</script>
+ 
+ </body></html>
+\ No newline at end of file
+diff --git a/catalog/view/theme/mystonestore/template/module/featured.tpl b/catalog/view/theme/mystonestore/template/module/featured.tpl
+index 31c3542..4671903 100644
+--- a/catalog/view/theme/mystonestore/template/module/featured.tpl
++++ b/catalog/view/theme/mystonestore/template/module/featured.tpl
+@@ -30,14 +30,15 @@
+ 					<?php } ?>
+ 				</div>
+ 			</div>
+-			<div class="e_online">
+-			<div class="col-md-7">
+-			<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
+-			</div>
+ 
+ 
+ 
+ 			<?php if(!empty($product['seller_details'])){ ?>
++			
++			<div class="e_online">
++			<div class="col-md-7">
++			<div class="profile-status offline seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p data-seller_id="<?php echo $product['seller_details']['seller_id'];?>" class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Offline</p>
++			</div>
+ 				<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
+ 			<?php } ?>
+ 			<?php if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
+@@ -54,36 +55,6 @@
+   </div>
+   <?php } ?>
+ </div>
+-<?php if(!empty($online_seller_array)){ ?>
+-	<?php $online_seller_array = array_unique($online_seller_array);?>
+-	<script>
+-	function check_seller_status(){
+-		var online_users = <?php echo json_encode($online_seller_array);?>;
+-		var classes = '';
+-		setTimeout(function () {
+-		$.ajax({
+-		  url: "index.php?route=account/account/checkstatus",
+-		  type: "POST",
+-		  data: 'online_users='+online_users,
+-		  dataType: "json",
+-		  success: function(data) {
+-			$.each(data, function(key,val){
+-				if(val==1){
+-					$('.seller_status_'+key).removeClass('offline').addClass('online');
+-					$('.seller_status_p_'+key).text('Online');
+-				} else {
+-					$('.seller_status_'+key).removeClass('online').addClass('offline');
+-					$('.seller_status_p_'+key).text('Offline');
+-				}
+-			});
+-		  },
+-		  complete:check_seller_status
+-		});
+-		}, 6000);
+-	}
+-	check_seller_status();
+-	</script>
+-<?php } ?>
+ <?php if(!$logged_in){ ?>
+ <script>
+ $('.chat_sellers').removeAttr('onclick');
+diff --git a/catalog/view/theme/mystonestore/template/module/filter.tpl b/catalog/view/theme/mystonestore/template/module/filter.tpl
+index 66bd24a..26fc433 100644
+--- a/catalog/view/theme/mystonestore/template/module/filter.tpl
++++ b/catalog/view/theme/mystonestore/template/module/filter.tpl
+@@ -1,54 +1,122 @@
+ <div class="slidebar tabs-menu"> 
+-<div class="find_products"> 
+-  <h4>FIND A PRODUCT</h4>   
+-  <ul>       
+-  <li class="dropdown">    
+-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
+-  <ul class="dropdown-menu product-menu">   
+-  <?php foreach($products_list as $products_rows){?>
+-  <li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
+-  <?php } ?>
+-  </ul>   
+-  </li>  
+-  <?php foreach ($filter_groups as $filter_group) { ?>
+-  <li class="dropdown">  
+-  <?php 
+-  $active_filter = '';
+-  foreach ($filter_group['filter'] as $filter) { ?> 
+-  <?php if (in_array($filter['filter_id'], $filter_category)) { 
+-	$active_filter ='hide';
+-  ?>	
+-    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
+-  <?php } } ?>		  
+-  <a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
+-  <ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
+-  <?php foreach ($filter_group['filter'] as $filter) { ?> 
+-  <?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
+-  <li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+-  <?php } else { ?>				
+-  <li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+-  <?php } } ?>
+-  </ul>    
+-  </li> 
+-  <?php } ?>
+-  </ul>
+-  <h4>PRICE</h4> 
+-  <ul>
+-  <li>
+-	<div id="filter-group1">
+-	<div id="scale-slider"></div>
++	<div class="find_products"> 
++		<h4>FIND A PRODUCT</h4>   
++		<ul>       
++			<li class="dropdown">    
++				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
++				<ul class="dropdown-menu product-menu">   
++					<?php foreach($products_list as $products_rows){?>
++					<li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
++				<?php } ?>
++				</ul>   
++			</li>  
++			<?php foreach ($filter_groups as $filter_group) { ?>
++			<li class="dropdown">  
++				<?php 
++				$active_filter = '';
++				foreach ($filter_group['filter'] as $filter) { ?> 
++				<?php if (in_array($filter['filter_id'], $filter_category)) { 
++				$active_filter ='hide';
++				?>	
++				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
++				<?php } } ?>		  
++				<a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
++				<ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
++					<?php foreach ($filter_group['filter'] as $filter) { ?> 
++					<?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
++					<li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
++					<?php } else { ?>				
++					<li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
++					<?php } } ?>
++				</ul>    
++			</li> 
++			<?php } ?>
++		</ul>
++		<h4>PRICE</h4> 
++		<ul>
++			<li>
++			<div id="filter-group1">
++			<div id="scale-slider"></div>
++			</div>
++		</li>
++		</ul>
++		<form class="search_box" role="search">  
++			<div class="input-group form-group add-on"> 
++				<input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
++				<input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
++				<input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
++				<button type="submit" id="button-filter">search</button>    
++			</div> 
++		</form> 
+ 	</div>
+-  </li>
+-  </ul>
+-  <form class="search_box" role="search">  
+-  <div class="input-group form-group add-on"> 
+-  <input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
+-  <input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
+-  <input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
+-  <button type="submit" id="button-filter">search</button>    
+-  </div> 
+-  </form> 
+-  </div>    <div class="wearehelp">  <h4>We Are Hear To help!</h4>   <p>Save Time And Let Us Provide You With Verified Contacts</p>    <button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    </div>  <div class="well" id="fadeandscale_three">   <h3>We Are Hear To Help !</h3>   <div class="helpingforms">        <form id="requirement_form">   <div class="form-group">    <label for="exampleInputEmail1">Enter Product and Service Name</label>     <input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">     </div>      <div class="form-group form_quantity">     <div class="input-group my-group form_quantity_group">      <input type="text" class="form-control" name="product_qty" placeholder="Quantity">  <select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">     <option value="0">Unit</option>               <option value="Unit 1">Unit 1</option>             <option value="Unit 2">Unit 2</option>             <option value="Unit 3">Unit 3</option>  <option value="Unit 4">Unit 4</option>             <option value="Unit 5">Unit 5</option>        </select>          </div>       <!-- /input-group -->    </div>    <div class="form-group">       <select  class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">   <option value="0">Approximate Order Value (RS) </option>          <option value="5000.22">5000.22</option>                    <option value="5440.26">5440.26</option>                    <option value="7400.29">7400.29</option>                    <option value="7440.4">7440.4</option>                     <option value="9940.45">9940.45</option>           </select>    </div>   <div class="form-group">      <label>Usage</label>    <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Flooring">Flooring</label>  </div>    <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="usage[]" value="Countertops">Countertops</label>     </div>     <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Wall Tile">Wall Tile</label>   </div>    <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="usage[]" value="Hardscaping">Hardscaping </label>     </div>       <div class="checkbox col-md-4 col-xs-12 find_other">    <input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">  </div>   </div>   <div class="form-group">    <label>Converage area(application)</label>     <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom </label>     </div>      <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="coverage_area[]" value="Bedroom">Bedroom </label>   </div>        <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Kitchen">Kitchen </label>    </div>      <div class="checkbox col-md-4 col-xs-12">    <label><input type="checkbox" name="coverage_area[]" value="Laundry">Laundry </label>     </div>       <div class="checkbox col-md-4 col-xs-12">     <label><input type="checkbox" name="coverage_area[]" value="Main Area">Main Area  </label>     </div>     <div class="checkbox col-md-4 col-xs-12">   <label><input type="checkbox" name="coverage_area[]" value="Out door">Out door </label>     </div>       <div class="checkbox col-md-4 col-xs-12 find_other">   <input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">   </div>    </div>    <div class="col-md-12 help_submit">    <button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>   </div>    <button type="button" class="close fadeandscale_three_close" aria-label="Close">   <span aria-hidden="true">&times;</span></button>   </form>      </div>    </div>    </div> 
++	<div class="wearehelp">  
++		<h4>We Are Hear To help!</h4>   
++		<p>Save Time And Let Us Provide You With Verified Contacts</p>    
++		<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
++	</div>
++	<div class="well" id="fadeandscale_three">   
++		<h3>We Are Hear To Help !</h3>   
++		<div class="helpingforms">
++			<form id="requirement_form">
++				<div class="form-group">
++					<label for="exampleInputEmail1">Enter Product and Service Name</label>
++					<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
++				</div>
++				<div class="form-group form_quantity">
++					<div class="input-group my-group form_quantity_group">
++						<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
++						<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
++							<option value="0">Unit</option>
++							<option value="Unit 1">Unit 1</option>
++							<option value="Unit 2">Unit 2</option>
++							<option value="Unit 3">Unit 3</option>
++							<option value="Unit 4">Unit 4</option>
++							<option value="Unit 5">Unit 5</option>
++						</select>
++					</div>
++				</div>
++				<div class="form-group">
++					<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
++						<option value="0">Approximate Order Value (RS) </option>
++						<option value="5000.22">5000.22</option>
++						<option value="5440.26">5440.26</option>
++						<option value="7400.29">7400.29</option>
++						<option value="7440.4">7440.4</option>
++						<option value="9940.45">9940.45</option>
++					</select>
++				</div>
++				<div class="form-group">
++					<label>Usage</label>
++					<div class="checkbox col-md-4 col-xs-12">
++						<label>
++							<input type="checkbox" name="usage[]" value="Flooring">Flooring
++						</label>
++					</div>
++					<div class="checkbox col-md-4 col-xs-12 find_other">
++						<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
++					</div>
++				</div>
++				<div class="form-group">
++					<label>Converage area(application)</label>
++					<div class="checkbox col-md-4 col-xs-12">
++						<label>
++						<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
++						</label>
++					</div>
++					<div class="checkbox col-md-4 col-xs-12 find_other">
++						<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
++					</div>
++				</div>
++				<div class="col-md-12 help_submit">
++					<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
++				</div>
++				<button type="button" class="close fadeandscale_three_close" aria-label="Close">
++					<span aria-hidden="true">&times;</span>
++				</button>
++			</form>
++		</div>
++	</div>
++</div> 
+ <script type="text/javascript">
+ $('ul.filter-menu li').click(function(){
+ 	var filter=[];	
+diff --git a/catalog/view/theme/mystonestore/template/product/category.tpl b/catalog/view/theme/mystonestore/template/product/category.tpl
+index 470f6ff..3aca679 100644
+--- a/catalog/view/theme/mystonestore/template/product/category.tpl
++++ b/catalog/view/theme/mystonestore/template/product/category.tpl
+@@ -58,12 +58,6 @@
+ 		<?php if ($product['price'] && $product['display_price']) { ?> 
+ 		<h5><?php echo $product['price']; ?></h5>		
+ 		<?php } ?> 
+-		<?php /*if(!empty($product['seller_details']) &&  $product['seller_details']['is_paid'] == 1){ ?>
+-		<div class="seller_status seller_<?php echo $product['seller_details']['seller_id'];?>">
+-		<div class="profile-status online"></div> Online		
+-		<div class="profile-status offline"></div> Offline	
+-		</div>
+-		<?php } */?>
+ 		<div class="row">
+ 			<div class="col-xs-12">
+ 				<?php for ($i = 1; $i <= 5; $i++) { ?>
+@@ -75,11 +69,12 @@
+ 				<?php } ?>
+ 			</div>	
+ 		</div>
++		<?php if(!empty($product['seller_details'])){ ?>
++		
+ 		
+ 		<div class="e_online">
+-		<div class="profile-status online seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Online</p>
++		<div class="profile-status offline seller_status_<?php echo $product['seller_details']['seller_id'];?>"></div> <p data-seller_id="<?php echo $product['seller_details']['seller_id'];?>" class="seller_status_p_<?php echo $product['seller_details']['seller_id'];?>">Offline</p>
+ 		</div>
+-		<?php if(!empty($product['seller_details'])){ ?>
+ 			<?php $online_seller_array[]=$product['seller_details']['seller_id'];?>
+ 		<?php } ?>
+ 		<div class="buttons clearfix">	
+@@ -145,7 +140,7 @@
+ 		});
+ 		}, 6000);
+ 	}
+-	check_seller_status();
++	//check_seller_status();
+ 	</script>
+ <?php } ?>
+ <?php if(!$logged){ ?>
+diff --git a/catalog/view/theme/mystonestore/template/redzone/redzone.tpl b/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
+index 0e252d2..d0311cb 100644
+--- a/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
++++ b/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
+@@ -123,36 +123,6 @@
+       <?php echo $content_bottom; ?>   
+     <?php echo $column_right; ?>
+ </div></div>
+-<?php if(!empty($online_seller_array)){ ?>
+-	<?php $online_seller_array = array_unique($online_seller_array);?>
+-	<script>
+-	function check_seller_status(){
+-		var online_users = <?php echo json_encode($online_seller_array);?>;
+-		var classes = '';
+-		setTimeout(function () {
+-		$.ajax({
+-		  url: "index.php?route=account/account/checkstatus",
+-		  type: "POST",
+-		  data: 'online_users='+online_users,
+-		  dataType: "json",
+-		  success: function(data) {
+-			$.each(data, function(key,val){
+-				if(val==1){
+-					$('.seller_status_'+key).removeClass('offline').addClass('online');
+-					$('.seller_status_p_'+key).text('Online');
+-				} else {
+-					$('.seller_status_'+key).removeClass('online').addClass('offline');
+-					$('.seller_status_p_'+key).text('Offline');
+-				}
+-			});
+-		  },
+-		  complete:check_seller_status
+-		});
+-		}, 6000);
+-	}
+-	check_seller_status();
+-	</script>
+-<?php } ?>
+ <?php if(!$logged){ ?>
+ <script>
+ $('#product_help').removeClass('fadeandscale_three_open');
+diff --git a/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl b/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
+index d22c623..6448601 100644
+--- a/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
++++ b/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
+@@ -124,36 +124,6 @@
+       <?php echo $content_bottom; ?>   
+     <?php echo $column_right; ?>
+ </div></div>
+-<?php if(!empty($online_seller_array)){ ?>
+-	<?php $online_seller_array = array_unique($online_seller_array);?>
+-	<script>
+-	function check_seller_status(){
+-		var online_users = <?php echo json_encode($online_seller_array);?>;
+-		var classes = '';
+-		setTimeout(function () {
+-		$.ajax({
+-		  url: "index.php?route=account/account/checkstatus",
+-		  type: "POST",
+-		  data: 'online_users='+online_users,
+-		  dataType: "json",
+-		  success: function(data) {
+-			$.each(data, function(key,val){
+-				if(val==1){
+-					$('.seller_status_'+key).removeClass('offline').addClass('online');
+-					$('.seller_status_p_'+key).text('Online');
+-				} else {
+-					$('.seller_status_'+key).removeClass('online').addClass('offline');
+-					$('.seller_status_p_'+key).text('Offline');
+-				}
+-			});
+-		  },
+-		  complete:check_seller_status
+-		});
+-		}, 6000);
+-	}
+-	check_seller_status();
+-	</script>
+-<?php } ?>
+ <?php if(!$logged){ ?>
+ <script>
+ $('#product_help').removeClass('fadeandscale_three_open');
+diff --git a/system/storage/modification/catalog/controller/account/account.php b/system/storage/modification/catalog/controller/account/account.php
+index ebd1cd0..7809945 100644
+--- a/system/storage/modification/catalog/controller/account/account.php
++++ b/system/storage/modification/catalog/controller/account/account.php
+@@ -164,14 +164,10 @@ class ControllerAccountAccount extends Controller {
+ 		$json = array();
+ 
+ 		$online_users =	$this->request->post['online_users'];
+-		$online_users = explode(',', $online_users);
+-
++		
+ 		if($online_users){
+ 			$this->load->model('account/customer');
+-			foreach($online_users as $row => $online_users_row){
+-				$user_info = $this->model_account_customer->getCustomerOnlineStatus($online_users_row);
+-				$json[$online_users_row] = $user_info['is_online'];
+-			}
++			$json['online_users'] = $this->model_account_customer->getOnlinePaidCustomers($online_users);
+ 		}
+ 		$this->response->addHeader('Content-Type: application/json');
+ 		$this->response->setOutput(json_encode($json));
+-- 
+2.15.1.windows.2
+
+
+From bce51abdb4ae6bf899186033d011630a090932fd Mon Sep 17 00:00:00 2001
+From: Venkatesh <venki88.php@gmail.com>
+Date: Tue, 13 Feb 2018 10:24:57 +0530
+Subject: [PATCH 2/5] Fix 12022018
+
+---
+ catalog/controller/information/contact.php         |   1 +
+ catalog/language/en-gb/information/contact.php     |   2 +-
+ .../mystonestore/template/common/column_left.tpl   |  10 +-
+ .../theme/mystonestore/template/common/header.tpl  |   2 +-
+ .../mystonestore/template/information/contact.tpl  |  88 +--------
+ .../theme/mystonestore/template/module/filter.tpl  | 220 ++++++++++-----------
+ .../mystonestore/template/product/category.tpl     |   7 +-
+ 7 files changed, 127 insertions(+), 203 deletions(-)
+
+diff --git a/catalog/controller/information/contact.php b/catalog/controller/information/contact.php
+index aa19280..876d0da 100644
+--- a/catalog/controller/information/contact.php
++++ b/catalog/controller/information/contact.php
+@@ -92,6 +92,7 @@ class ControllerInformationContact extends Controller {
+ 		$data['geocode_hl'] = $this->config->get('config_language');
+ 		$data['telephone'] = $this->config->get('config_telephone');
+ 		$data['fax'] = $this->config->get('config_fax');
++		$data['email'] = $this->config->get('config_email');
+ 		$data['open'] = nl2br($this->config->get('config_open'));
+ 		$data['comment'] = $this->config->get('config_comment');
+ 
+diff --git a/catalog/language/en-gb/information/contact.php b/catalog/language/en-gb/information/contact.php
+index 9126182..785a684 100644
+--- a/catalog/language/en-gb/information/contact.php
++++ b/catalog/language/en-gb/information/contact.php
+@@ -1,6 +1,6 @@
+ <?php
+ // Heading
+-$_['heading_title']  = 'Contact Us';
++$_['heading_title']  = '24 x 7 Customer Care';
+ 
+ // Text
+ $_['text_location']  = 'Our Location';
+diff --git a/catalog/view/theme/mystonestore/template/common/column_left.tpl b/catalog/view/theme/mystonestore/template/common/column_left.tpl
+index a48bbef..1f5bbf8 100644
+--- a/catalog/view/theme/mystonestore/template/common/column_left.tpl
++++ b/catalog/view/theme/mystonestore/template/common/column_left.tpl
+@@ -1,7 +1,11 @@
+ <?php if ($modules) { ?>
+-<div class="col-lg-3 col-sm-3 col-xs-12"> <?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='common/home')){ ?><div class="left_cat"><?php } ?>
++<div class="col-lg-3 col-sm-3 col-xs-12">
++  <?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='common/home')){ ?><div class="left_cat"><?php } ?>
++  <?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='product/category')){ ?><div class="slidebar tabs-menu"><?php } ?>
+   <?php foreach ($modules as $module) { ?>
+   <?php echo $module; ?>
+-  <?php } ?><?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='common/home')){ ?>
+-</div><?php } ?></div>
++  <?php } ?>
++  <?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='common/home')){ ?></div><?php } ?>
++  <?php if(!isset($_GET['route']) || (isset($_GET['route']) && $_GET['route']=='product/category')){ ?></div><?php } ?>
++</div>
+ <?php } ?>
+\ No newline at end of file
+diff --git a/catalog/view/theme/mystonestore/template/common/header.tpl b/catalog/view/theme/mystonestore/template/common/header.tpl
+index fbba73a..869a630 100644
+--- a/catalog/view/theme/mystonestore/template/common/header.tpl
++++ b/catalog/view/theme/mystonestore/template/common/header.tpl
+@@ -68,7 +68,7 @@
+           
+             <li><a href="index.php?route=product/category&path=20">Products</a> </li>
+             
+-            <li><a href="index.php?route=information/information&information_id=7">24x7 Customer Care </a> </li>
++            <li><a href="index.php?route=information/contact">24x7 Customer Care </a> </li>
+ 			<?php if($seller_social_site!=''){ ?>
+ 			<li><a href="<?php echo $seller_social_site;?>">Social Site</a> </li>
+ 			<?php } ?>
+diff --git a/catalog/view/theme/mystonestore/template/information/contact.tpl b/catalog/view/theme/mystonestore/template/information/contact.tpl
+index fb311cb..54bf556 100644
+--- a/catalog/view/theme/mystonestore/template/information/contact.tpl
++++ b/catalog/view/theme/mystonestore/template/information/contact.tpl
+@@ -15,91 +15,9 @@
+     <?php } ?>
+     <div id="content" class="<?php echo $class; ?>"><?php echo $content_top; ?>
+       <h1><?php echo $heading_title; ?></h1>
+-      <h3><?php echo $text_location; ?></h3>
+-      <div class="panel panel-default">
+-        <div class="panel-body">
+-          <div class="row">
+-            <?php if ($image) { ?>
+-            <div class="col-sm-3"><img src="<?php echo $image; ?>" alt="<?php echo $store; ?>" title="<?php echo $store; ?>" class="img-thumbnail" /></div>
+-            <?php } ?>
+-            <div class="col-sm-3"><strong><?php echo $store; ?></strong><br />
+-              <address>
+-              <?php echo $address; ?>
+-              </address>
+-              <?php if ($geocode) { ?>
+-              <a href="https://maps.google.com/maps?q=<?php echo urlencode($geocode); ?>&hl=<?php echo $geocode_hl; ?>&t=m&z=15" target="_blank" class="btn btn-info"><i class="fa fa-map-marker"></i> <?php echo $button_map; ?></a>
+-              <?php } ?>
+-            </div>
+-            <div class="col-sm-3"><strong><?php echo $text_telephone; ?></strong><br>
+-              <?php echo $telephone; ?><br />
+-              <br />
+-              <?php if ($fax) { ?>
+-              <strong><?php echo $text_fax; ?></strong><br>
+-              <?php echo $fax; ?>
+-              <?php } ?>
+-            </div>
+-            <div class="col-sm-3">
+-              <?php if ($open) { ?>
+-              <strong><?php echo $text_open; ?></strong><br />
+-              <?php echo $open; ?><br />
+-              <br />
+-              <?php } ?>
+-              <?php if ($comment) { ?>
+-              <strong><?php echo $text_comment; ?></strong><br />
+-              <?php echo $comment; ?>
+-              <?php } ?>
+-            </div>
+-          </div>
+-        </div>
+-      </div>
+-      <?php if ($locations) { ?>
+-      <h3><?php echo $text_store; ?></h3>
+-      <div class="panel-group" id="accordion">
+-        <?php foreach ($locations as $location) { ?>
+-        <div class="panel panel-default">
+-          <div class="panel-heading">
+-            <h4 class="panel-title"><a href="#collapse-location<?php echo $location['location_id']; ?>" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion"><?php echo $location['name']; ?> <i class="fa fa-caret-down"></i></a></h4>
+-          </div>
+-          <div class="panel-collapse collapse" id="collapse-location<?php echo $location['location_id']; ?>">
+-            <div class="panel-body">
+-              <div class="row">
+-                <?php if ($location['image']) { ?>
+-                <div class="col-sm-3"><img src="<?php echo $location['image']; ?>" alt="<?php echo $location['name']; ?>" title="<?php echo $location['name']; ?>" class="img-thumbnail" /></div>
+-                <?php } ?>
+-                <div class="col-sm-3"><strong><?php echo $location['name']; ?></strong><br />
+-                  <address>
+-                  <?php echo $location['address']; ?>
+-                  </address>
+-                  <?php if ($location['geocode']) { ?>
+-                  <a href="https://maps.google.com/maps?q=<?php echo urlencode($location['geocode']); ?>&hl=<?php echo $geocode_hl; ?>&t=m&z=15" target="_blank" class="btn btn-info"><i class="fa fa-map-marker"></i> <?php echo $button_map; ?></a>
+-                  <?php } ?>
+-                </div>
+-                <div class="col-sm-3"> <strong><?php echo $text_telephone; ?></strong><br>
+-                  <?php echo $location['telephone']; ?><br />
+-                  <br />
+-                  <?php if ($location['fax']) { ?>
+-                  <strong><?php echo $text_fax; ?></strong><br>
+-                  <?php echo $location['fax']; ?>
+-                  <?php } ?>
+-                </div>
+-                <div class="col-sm-3">
+-                  <?php if ($location['open']) { ?>
+-                  <strong><?php echo $text_open; ?></strong><br />
+-                  <?php echo $location['open']; ?><br />
+-                  <br />
+-                  <?php } ?>
+-                  <?php if ($location['comment']) { ?>
+-                  <strong><?php echo $text_comment; ?></strong><br />
+-                  <?php echo $location['comment']; ?>
+-                  <?php } ?>
+-                </div>
+-              </div>
+-            </div>
+-          </div>
+-        </div>
+-        <?php } ?>
+-      </div>
+-      <?php } ?>
++      <br /><br />
++      <p>Please get in touch with us at below email</p><p><?php echo $email; ?></p>
++      
+       <form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data" class="form-horizontal">
+         <fieldset>
+           <legend><?php echo $text_contact; ?></legend>
+diff --git a/catalog/view/theme/mystonestore/template/module/filter.tpl b/catalog/view/theme/mystonestore/template/module/filter.tpl
+index 26fc433..98148b6 100644
+--- a/catalog/view/theme/mystonestore/template/module/filter.tpl
++++ b/catalog/view/theme/mystonestore/template/module/filter.tpl
+@@ -1,122 +1,120 @@
+-<div class="slidebar tabs-menu"> 
+-	<div class="find_products"> 
+-		<h4>FIND A PRODUCT</h4>   
+-		<ul>       
+-			<li class="dropdown">    
+-				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
+-				<ul class="dropdown-menu product-menu">   
+-					<?php foreach($products_list as $products_rows){?>
+-					<li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
+-				<?php } ?>
+-				</ul>   
+-			</li>  
+-			<?php foreach ($filter_groups as $filter_group) { ?>
+-			<li class="dropdown">  
+-				<?php 
+-				$active_filter = '';
+-				foreach ($filter_group['filter'] as $filter) { ?> 
+-				<?php if (in_array($filter['filter_id'], $filter_category)) { 
+-				$active_filter ='hide';
+-				?>	
+-				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
+-				<?php } } ?>		  
+-				<a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
+-				<ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
+-					<?php foreach ($filter_group['filter'] as $filter) { ?> 
+-					<?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
+-					<li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+-					<?php } else { ?>				
+-					<li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
+-					<?php } } ?>
+-				</ul>    
+-			</li> 
++<div class="find_products"> 
++	<h4>FIND A PRODUCT</h4>   
++	<ul>       
++		<li class="dropdown">    
++			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="product-filter"><?php echo (isset($_GET['product_filter'])) ? $_GET['product_filter'] : 'Product'; ?></span><span class="caret"></span></a> 
++			<ul class="dropdown-menu product-menu">   
++				<?php foreach($products_list as $products_rows){?>
++				<li data-value='<?php echo $products_rows['product_id'];?>'><?php echo $products_rows['name'];?></li>  
+ 			<?php } ?>
+-		</ul>
+-		<h4>PRICE</h4> 
+-		<ul>
+-			<li>
+-			<div id="filter-group1">
+-			<div id="scale-slider"></div>
++			</ul>   
++		</li>  
++		<?php foreach ($filter_groups as $filter_group) { ?>
++		<li class="dropdown">  
++			<?php 
++			$active_filter = '';
++			foreach ($filter_group['filter'] as $filter) { ?> 
++			<?php if (in_array($filter['filter_id'], $filter_category)) { 
++			$active_filter ='hide';
++			?>	
++			<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter['name']; ?><span class="caret"></span></a>
++			<?php } } ?>		  
++			<a href="#" id="filtername<?php echo $filter_group['filter_group_id']; ?>" class="dropdown-toggle  <?php echo $active_filter;?>" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><?php echo $filter_group['name']; ?><span class="caret"></span></a>
++			<ul class="dropdown-menu filter-menu" id="filter-group<?php echo $filter_group['filter_group_id']; ?>" data-filter-group="<?php echo $filter_group['filter_group_id']; ?>">   
++				<?php foreach ($filter_group['filter'] as $filter) { ?> 
++				<?php if (in_array($filter['filter_id'], $filter_category)) { ?>	
++				<li class="current" data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
++				<?php } else { ?>				
++				<li data-value="<?php echo $filter['filter_id']; ?>"> <?php echo $filter['name']; ?></li>   
++				<?php } } ?>
++			</ul>    
++		</li> 
++		<?php } ?>
++	</ul>
++	<h4>PRICE</h4> 
++	<ul>
++		<li>
++		<div id="filter-group1">
++		<div id="scale-slider"></div>
++		</div>
++	</li>
++	</ul>
++	<form class="search_box" role="search">  
++		<div class="input-group form-group add-on"> 
++			<input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
++			<input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
++			<input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
++			<button type="submit" id="button-filter">search</button>    
++		</div> 
++	</form> 
++</div>
++<div class="wearehelp">  
++	<h4>We Are Hear To help!</h4>   
++	<p>Save Time And Let Us Provide You With Verified Contacts</p>    
++	<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
++</div>
++<div class="well" id="fadeandscale_three">   
++	<h3>We Are Hear To Help !</h3>   
++	<div class="helpingforms">
++		<form id="requirement_form">
++			<div class="form-group">
++				<label for="exampleInputEmail1">Enter Product and Service Name</label>
++				<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
+ 			</div>
+-		</li>
+-		</ul>
+-		<form class="search_box" role="search">  
+-			<div class="input-group form-group add-on"> 
+-				<input type="hidden" name="filter" id="filter_value" value="<?php echo implode(',',$filter_category);?>" />  
+-				<input type="hidden" name="price_filter" id="price_filter_value" value="<?php echo implode(',',$filter_price);?>" />  
+-				<input type="hidden" name="product_filter" id="product_filter_value" value="<?php echo $product_filter;?>" />  
+-				<button type="submit" id="button-filter">search</button>    
+-			</div> 
+-		</form> 
+-	</div>
+-	<div class="wearehelp">  
+-		<h4>We Are Hear To help!</h4>   
+-		<p>Save Time And Let Us Provide You With Verified Contacts</p>    
+-		<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
+-	</div>
+-	<div class="well" id="fadeandscale_three">   
+-		<h3>We Are Hear To Help !</h3>   
+-		<div class="helpingforms">
+-			<form id="requirement_form">
+-				<div class="form-group">
+-					<label for="exampleInputEmail1">Enter Product and Service Name</label>
+-					<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
+-				</div>
+-				<div class="form-group form_quantity">
+-					<div class="input-group my-group form_quantity_group">
+-						<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
+-						<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
+-							<option value="0">Unit</option>
+-							<option value="Unit 1">Unit 1</option>
+-							<option value="Unit 2">Unit 2</option>
+-							<option value="Unit 3">Unit 3</option>
+-							<option value="Unit 4">Unit 4</option>
+-							<option value="Unit 5">Unit 5</option>
+-						</select>
+-					</div>
+-				</div>
+-				<div class="form-group">
+-					<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
+-						<option value="0">Approximate Order Value (RS) </option>
+-						<option value="5000.22">5000.22</option>
+-						<option value="5440.26">5440.26</option>
+-						<option value="7400.29">7400.29</option>
+-						<option value="7440.4">7440.4</option>
+-						<option value="9940.45">9940.45</option>
++			<div class="form-group form_quantity">
++				<div class="input-group my-group form_quantity_group">
++					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
++					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
++						<option value="0">Unit</option>
++						<option value="Unit 1">Unit 1</option>
++						<option value="Unit 2">Unit 2</option>
++						<option value="Unit 3">Unit 3</option>
++						<option value="Unit 4">Unit 4</option>
++						<option value="Unit 5">Unit 5</option>
+ 					</select>
+ 				</div>
+-				<div class="form-group">
+-					<label>Usage</label>
+-					<div class="checkbox col-md-4 col-xs-12">
+-						<label>
+-							<input type="checkbox" name="usage[]" value="Flooring">Flooring
+-						</label>
+-					</div>
+-					<div class="checkbox col-md-4 col-xs-12 find_other">
+-						<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
+-					</div>
++			</div>
++			<div class="form-group">
++				<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
++					<option value="0">Approximate Order Value (RS) </option>
++					<option value="5000.22">5000.22</option>
++					<option value="5440.26">5440.26</option>
++					<option value="7400.29">7400.29</option>
++					<option value="7440.4">7440.4</option>
++					<option value="9940.45">9940.45</option>
++				</select>
++			</div>
++			<div class="form-group">
++				<label>Usage</label>
++				<div class="checkbox col-md-4 col-xs-12">
++					<label>
++						<input type="checkbox" name="usage[]" value="Flooring">Flooring
++					</label>
++				</div>
++				<div class="checkbox col-md-4 col-xs-12 find_other">
++					<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
+ 				</div>
+-				<div class="form-group">
+-					<label>Converage area(application)</label>
+-					<div class="checkbox col-md-4 col-xs-12">
+-						<label>
+-						<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
+-						</label>
+-					</div>
+-					<div class="checkbox col-md-4 col-xs-12 find_other">
+-						<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
+-					</div>
++			</div>
++			<div class="form-group">
++				<label>Converage area(application)</label>
++				<div class="checkbox col-md-4 col-xs-12">
++					<label>
++					<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
++					</label>
+ 				</div>
+-				<div class="col-md-12 help_submit">
+-					<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
++				<div class="checkbox col-md-4 col-xs-12 find_other">
++					<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
+ 				</div>
+-				<button type="button" class="close fadeandscale_three_close" aria-label="Close">
+-					<span aria-hidden="true">&times;</span>
+-				</button>
+-			</form>
+-		</div>
++			</div>
++			<div class="col-md-12 help_submit">
++				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
++			</div>
++			<button type="button" class="close fadeandscale_three_close" aria-label="Close">
++				<span aria-hidden="true">&times;</span>
++			</button>
++		</form>
+ 	</div>
+-</div> 
++</div>
+ <script type="text/javascript">
+ $('ul.filter-menu li').click(function(){
+ 	var filter=[];	
+diff --git a/catalog/view/theme/mystonestore/template/product/category.tpl b/catalog/view/theme/mystonestore/template/product/category.tpl
+index 3aca679..72986ba 100644
+--- a/catalog/view/theme/mystonestore/template/product/category.tpl
++++ b/catalog/view/theme/mystonestore/template/product/category.tpl
+@@ -2,7 +2,7 @@
+ <link type="text/css" rel="stylesheet" media="all" href="chat/css/chat.css" />
+ <div class="container">
+ <div id="tabs-container" style="padding: 0;">
+-  <?php echo str_replace('<aside id="column-left" class="col-sm-3 hidden-xs">','<aside id="column-left" class="col-lg-3 col-sm-4 hidden-xs">',$column_left); ?>
++  <?php echo $column_left; ?>
+   <div class="tab  col-lg-9 col-sm-8" style="padding: 0;">     
+    <div id="tab-1" class="tab-content">			
+    <!--  <?php echo $content_top; ?>
+@@ -159,7 +159,8 @@ $('.chat_sellers').click(function(e){
+ </script>
+ <?php } ?>
+ <script>
+-$("#scale-slider")
++jQuery(document).ready(function($){
++	$("#scale-slider")
+ 	.slider({
+ 	min: <?php echo min($price_calc); ?> ,
+ 			max: <?php echo max($price_calc); ?> ,
+@@ -174,6 +175,8 @@ $("#scale-slider")
+ 	})
+ 
+ 	.slider("float");
++});
++
+ </script>
+ <?php if($logged){ ?>
+ <script type="text/javascript" src="chat/js/catgchat.js"></script>
+-- 
+2.15.1.windows.2
+
+
+From 2445fda3f96731ceb222b9d76477a53a1cee85da Mon Sep 17 00:00:00 2001
+From: Venkatesh Periyasamy <periyasamyv@hcl.com>
+Date: Tue, 13 Feb 2018 18:05:37 +0530
+Subject: [PATCH 3/5] Fix 13022018-1
+
+---
+ catalog/controller/product/category.php            |  34 +++---
+ catalog/model/account/catalog/seller.php           |   8 +-
+ .../theme/mystonestore/template/common/footer.tpl  | 117 ++++++++++++++++-----
+ 3 files changed, 113 insertions(+), 46 deletions(-)
+
+diff --git a/catalog/controller/product/category.php b/catalog/controller/product/category.php
+index 9e3dbdd..0ca4903 100644
+--- a/catalog/controller/product/category.php
++++ b/catalog/controller/product/category.php
+@@ -520,19 +520,12 @@ class ControllerProductCategory extends Controller {
+ 				$json['error']['unit'] = "Please select the Unit";
+ 			}
+ 			
+-			if (utf8_strlen($this->request->post['order_value']) == 0) {
+-				$json['error']['order_value'] = "Please select the Order value";
+-			}
+-			
+-			if (isset($this->request->post['usage']) && empty($this->request->post['usage'])) {
+-				$json['error']['usage'] = "Please choose the Usage";
+-			}
+-			
+-			if (isset($this->request->post['coverage_area']) && empty($this->request->post['coverage_area'])) {
+-				$json['error']['coverage_area'] = "Please choose the Coverage area";
++			if (isset($this->request->post['social_groups']) && empty($this->request->post['social_groups']) 
++					&& utf8_strlen($this->request->post['other_group_text']) == 0) {
++				$json['error']['usage'] = "Please choose the atleaset one Social Group or Enter in others options";
+ 			}
+ 
+-			if (!isset($json['error'])) {
++			if (!isset($json['error']) && isset($this->request->post['social_groups']) && empty($this->request->post['social_groups'])) {
+ 				$message = '';
+ 				$mail = new Mail();
+ 				$mail->protocol = $this->config->get('config_mail_protocol');
+@@ -543,7 +536,7 @@ class ControllerProductCategory extends Controller {
+ 				$mail->smtp_port = $this->config->get('config_mail_smtp_port');
+ 				$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
+ 				$this->load->model('account/catalog/seller');
+-				$sellerdetails = $this->model_account_catalog_seller->getSellerDetails();
++				$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
+ 				$email[] = $this->config->get('config_email');
+ 				if($sellerdetails){
+ 					foreach($sellerdetails as $sellerdetailsrow){
+@@ -555,17 +548,24 @@ class ControllerProductCategory extends Controller {
+ 				$mail->setFrom($customer_email);
+ 				$mail->setSender(html_entity_decode('User', ENT_QUOTES, 'UTF-8'));
+ 				$mail->setSubject(html_entity_decode('Product Enquiry', ENT_QUOTES, 'UTF-8'));
++
++				$social_group_names = array();
++				foreach($this->request->post['social_groups'] as $id) {
++					$social_group_names[] = $this->request->post['social_groups_texts'][$id];
++				}				
+ 				
+ 				$message .= 'Product and Service Name: '.$this->request->post['product_name'].'<br/>';
+ 				$message .= 'Product Quantity: '.$this->request->post['product_qty'].'<br/>';
+ 				$message .= 'Unit: '.$this->request->post['unit'].'<br/>';
+-				$message .= 'Order value: '.$this->request->post['order_value'].'<br/>';
+-				$message .= 'Usage: '.implode(',',$this->request->post['usage']).'<br/>';
+-				$message .= 'Coverage Area: '.implode(',',$this->request->post['coverage_area']).'<br/>';
++				if(!empty($social_group_names)) {
++					$message .= 'Social Groups: '.implode(', ',$social_group_names).'<br/>';
++				}
++				if (utf8_strlen($this->request->post['other_group_text']) > 0) {
++					$message .= 'Other Option: '.$this->request->post['other_group_text'].'<br/>';
++				}
+ 				$mail->setHtml($message);
+ 				$mail->send();
+-				$json['success'] = "Enquiry has been submitted successfully";
+-				
++				$json['success'] = "Enquiry has been submitted successfully";				
+ 			}
+ 		}
+ 
+diff --git a/catalog/model/account/catalog/seller.php b/catalog/model/account/catalog/seller.php
+index 4dfa9f1..302da92 100644
+--- a/catalog/model/account/catalog/seller.php
++++ b/catalog/model/account/catalog/seller.php
+@@ -17,8 +17,12 @@ class ModelAccountCatalogSeller extends Model {
+ 		return $query->row;
+ 	}
+ 	
+-	public function getSellerDetails() {
+-		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "seller WHERE status = 1 and is_paid = 1 and approved=1");
++	public function getPaidSellerDetails($groupIds = array()) {
++		$query = $this->db->query(
++			"SELECT DISTINCT * FROM " . DB_PREFIX . "seller as s ".
++			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id == sgu.social_group_user_id".
++			"WHERE status = 1 and is_paid = 1 and approved=1 AND sgu.social_group_id IN (" . JOIN(",", $groupIds) . ")"
++		);
+ 
+ 		return $query->rows;
+ 	}
+diff --git a/catalog/view/theme/mystonestore/template/common/footer.tpl b/catalog/view/theme/mystonestore/template/common/footer.tpl
+index 97d9313..8a2814d 100644
+--- a/catalog/view/theme/mystonestore/template/common/footer.tpl
++++ b/catalog/view/theme/mystonestore/template/common/footer.tpl
+@@ -148,40 +148,103 @@
+ 
+ </div>
+ 
++<div class="well" id="fadeandscale_three">   
++	<h3>We Are Hear To Help !</h3>   
++	<div class="helpingforms">
++		<form id="requirement_form">
++			<div class="form-group">
++				<label for="exampleInputEmail1">Enter Product and Service Name</label>
++				<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
++			</div>
++			<div class="form-group form_quantity">
++				<div class="input-group my-group form_quantity_group">
++					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
++					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
++						<option value="0">Unit</option>
++						<option value="Unit 1">Unit 1</option>
++						<option value="Unit 2">Unit 2</option>
++						<option value="Unit 3">Unit 3</option>
++						<option value="Unit 4">Unit 4</option>
++						<option value="Unit 5">Unit 5</option>
++					</select>
++				</div>
++			</div>
++			<div class="form-group">
++				<label>Social Groups</label>
++				<?php foreach($group_lists as $index => $group_rows){ ?>
++				<?php if($index > 0 && $index % 3 == 0) { ?>
++				<div style="clear: both;"></div>
++				<?php } ?>
++				<div class="checkbox col-md-4 col-xs-12">
++					<label>
++						<input type="checkbox" name="social_groups[]" value="<?php echo $group_rows['social_group_id']; ?>"><?php echo $group_rows['name']; ?>
++					</label>
++					<input type="hidden" name="social_groups_texts[<?php echo $group_rows['social_group_id']; ?>]" value="<?php echo $group_rows['name']; ?>" />
++				</div>
++				<?php } ?>
++				<div class="checkbox col-md-4 col-xs-12 find_other">
++					<input type="text" class="form-control" name="other_group_text" value="" placeholder="other options">
++				</div>
++			</div>
++			<div class="col-md-12 help_submit">
++				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
++			</div>
++			<button type="button" class="close fadeandscale_three_close" aria-label="Close">
++				<span aria-hidden="true">&times;</span>
++			</button>
++		</form>
++	</div>
++</div>
+ 
+ 
+-<script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
+-
+-<script type="text/javascript">
+-
+-  $(document).ready(function () {
+-
+-
+-
+-     $('.testimonials-slider').bxSlider({
+-
+-           minSlides: 2,
+-
+-           maxSlides: 2,
+-
+-           mode:'vertical',
+-
+-          slideMargin:2,
+-
+-          pager:false,
+-
+-          auto: true,
+-
+-          autoControls: true
+ 
+-     });
+ 
+-     
++<script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
+ 
+- });
++<script type="text/javascript">
+ 
++	function submit_requirement(){
++		$.ajax({
++			type: 'POST',
++			url: 'index.php?route=product/category/submitRequirement',
++			data: $('#requirement_form').serialize(),
++			beforeSend: function() {
++				$('#help_submit_button').attr('disabled', true);
++				$('#help_submit_button').text('loading...');
++			},
++			complete: function() {
++				$('#help_submit_button').attr('disabled', false);
++				$('#help_submit_button').text('Submit Your Requirment');
++			},
++			success: function(data) {
++				$('.alert').remove();
++				if (data['error']) {
++					$.each(data['error'] , function(i, val) {
++						$('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');
++					});
++				}
++				if (data['success']) {
++					location.reload();
++				}
++			}
++		});
++	}
++
++  	$(document).ready(function () {
++		$('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});
++
++		$('.testimonials-slider').bxSlider({
++			minSlides: 2,
++			maxSlides: 2,
++			mode:'vertical',
++			slideMargin:2,
++			pager:false,
++			auto: true,
++			autoControls: true
++		});
++	});
+ </script>
+-<script>$(document).ready(function () {    $('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});});</script>
++<script>$(document).ready(function () });</script>
+ 
+ <?php if(isset($userid)) { ?>
+ <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
+-- 
+2.15.1.windows.2
+
+
+From 6d21677479a122e572e2ab7604bbacf0233ece8a Mon Sep 17 00:00:00 2001
+From: Venkatesh <venki88.php@gmail.com>
+Date: Tue, 13 Feb 2018 19:24:01 +0530
+Subject: [PATCH 4/5] Fix 13022018-1
+
+---
+ .../theme/mystonestore/template/module/filter.tpl  | 69 +---------------------
+ 1 file changed, 1 insertion(+), 68 deletions(-)
+
+diff --git a/catalog/view/theme/mystonestore/template/module/filter.tpl b/catalog/view/theme/mystonestore/template/module/filter.tpl
+index 98148b6..56ed2ee 100644
+--- a/catalog/view/theme/mystonestore/template/module/filter.tpl
++++ b/catalog/view/theme/mystonestore/template/module/filter.tpl
+@@ -48,73 +48,6 @@
+ 		</div> 
+ 	</form> 
+ </div>
+-<div class="wearehelp">  
+-	<h4>We Are Hear To help!</h4>   
+-	<p>Save Time And Let Us Provide You With Verified Contacts</p>    
+-	<button type="button" id="product_help" class="fadeandscale_three_open">Help</button>    
+-</div>
+-<div class="well" id="fadeandscale_three">   
+-	<h3>We Are Hear To Help !</h3>   
+-	<div class="helpingforms">
+-		<form id="requirement_form">
+-			<div class="form-group">
+-				<label for="exampleInputEmail1">Enter Product and Service Name</label>
+-				<input type="text-align" name="product_name" id="product_name" class="form-control" placeholder="Product and Service Name">
+-			</div>
+-			<div class="form-group form_quantity">
+-				<div class="input-group my-group form_quantity_group">
+-					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
+-					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
+-						<option value="0">Unit</option>
+-						<option value="Unit 1">Unit 1</option>
+-						<option value="Unit 2">Unit 2</option>
+-						<option value="Unit 3">Unit 3</option>
+-						<option value="Unit 4">Unit 4</option>
+-						<option value="Unit 5">Unit 5</option>
+-					</select>
+-				</div>
+-			</div>
+-			<div class="form-group">
+-				<select class="selectpicker ammount_form form-control" id="order_value" name="order_value" title="Please select a order ...">
+-					<option value="0">Approximate Order Value (RS) </option>
+-					<option value="5000.22">5000.22</option>
+-					<option value="5440.26">5440.26</option>
+-					<option value="7400.29">7400.29</option>
+-					<option value="7440.4">7440.4</option>
+-					<option value="9940.45">9940.45</option>
+-				</select>
+-			</div>
+-			<div class="form-group">
+-				<label>Usage</label>
+-				<div class="checkbox col-md-4 col-xs-12">
+-					<label>
+-						<input type="checkbox" name="usage[]" value="Flooring">Flooring
+-					</label>
+-				</div>
+-				<div class="checkbox col-md-4 col-xs-12 find_other">
+-					<input type="text" class="form-control" id="usage" name="usage[]" value="" placeholder="other options">
+-				</div>
+-			</div>
+-			<div class="form-group">
+-				<label>Converage area(application)</label>
+-				<div class="checkbox col-md-4 col-xs-12">
+-					<label>
+-					<input type="checkbox" name="coverage_area[]" value="Bathroom">Bathroom 
+-					</label>
+-				</div>
+-				<div class="checkbox col-md-4 col-xs-12 find_other">
+-					<input type="text" class="form-control" id="coverage_area" name="coverage_area[]" value="" placeholder="other options">
+-				</div>
+-			</div>
+-			<div class="col-md-12 help_submit">
+-				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
+-			</div>
+-			<button type="button" class="close fadeandscale_three_close" aria-label="Close">
+-				<span aria-hidden="true">&times;</span>
+-			</button>
+-		</form>
+-	</div>
+-</div>
+ <script type="text/javascript">
+ $('ul.filter-menu li').click(function(){
+ 	var filter=[];	
+@@ -154,5 +87,5 @@ $('#button-filter').on('click', function(e) {
+ 		url += '&product_filter=' + product_filter_val;
+ 	}
+ 	location = '<?php echo $action; ?>' + url;
+-});function submit_requirement(){	$.ajax({		type: 'POST',		url: 'index.php?route=product/category/submitRequirement',		data: $('#requirement_form').serialize(),		beforeSend: function() {			$('#help_submit_button').attr('disabled', true);			$('#help_submit_button').text('loading...');					},		complete: function() {			$('#help_submit_button').attr('disabled', false);			$('#help_submit_button').text('Submit Your Requirment');		},		success: function(data) {			$('.alert').remove();			if (data['error']) {				console.log(data['error']);				$.each(data['error'] , function(i, val) { 				  $('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');				});							}			if (data['success']) {				location.reload();			}		}	});}
++});
+ </script>
+-- 
+2.15.1.windows.2
+
+
+From 8b63e1153176f61eabf216965b09a4b542957f44 Mon Sep 17 00:00:00 2001
+From: Venkatesh <venki88.php@gmail.com>
+Date: Wed, 14 Feb 2018 09:29:10 +0530
+Subject: [PATCH 5/5] Fix 140220218 -1
+
+---
+ catalog/controller/common/socialfooter.php         |   4 +-
+ catalog/controller/product/category.php            |  36 ++++--
+ catalog/controller/redzone/redzone.php             |   7 ++
+ catalog/controller/simple_blog/article.php         |   2 +
+ catalog/model/account/catalog/seller.php           |  28 ++++-
+ .../extension/module/simple_blog/article.tpl       | 127 +++++++++++++++------
+ catalog/view/theme/mystonestore/css/style.css      |   2 +-
+ .../theme/mystonestore/template/common/footer.tpl  |  34 ++++--
+ .../mystonestore/template/product/category.tpl     |   7 +-
+ .../mystonestore/template/redzone/redzone.tpl      |   5 -
+ .../template/redzone/redzone_details.tpl           |   6 +-
+ 11 files changed, 185 insertions(+), 73 deletions(-)
+
+diff --git a/catalog/controller/common/socialfooter.php b/catalog/controller/common/socialfooter.php
+index 2219210..23415d6 100644
+--- a/catalog/controller/common/socialfooter.php
++++ b/catalog/controller/common/socialfooter.php
+@@ -49,7 +49,8 @@ class ControllerCommonSocialFooter extends Controller {
+ 		$data['telephone'] = $this->config->get('config_telephone');
+ 
+ 		$data['powered'] = sprintf($this->language->get('text_powered'), $this->config->get('config_name'), date('Y', time()));
+-		
++		if(isset($this->session->data['customer_id']))
++{
+ 		$userid = $data['userid'] = $this->session->data['customer_id'];
+ 		$data['users_lists'] = $this->model_simple_blog_groups->getUsersList($userid);
+ 		$data['group_lists'] = $this->model_simple_blog_groups->getAllgroups($userid);
+@@ -59,6 +60,7 @@ class ControllerCommonSocialFooter extends Controller {
+ 				$data['group_lists_members'][$group_lists_row['social_group_id']] = $this->model_simple_blog_groups->getGroupusers($group_lists_row['social_group_id']);
+ 			}
+ 		}
++	}
+ 		
+ 		// Whos Online
+ 		if ($this->config->get('config_customer_online')) {
+diff --git a/catalog/controller/product/category.php b/catalog/controller/product/category.php
+index 0ca4903..7d56d75 100644
+--- a/catalog/controller/product/category.php
++++ b/catalog/controller/product/category.php
+@@ -508,6 +508,8 @@ class ControllerProductCategory extends Controller {
+ 
+ 		if ($this->request->server['REQUEST_METHOD'] == 'POST') {
+ 
++			$json['post'] = $this->request->post;
++
+ 			if ((utf8_strlen($this->request->post['product_name']) < 3) || (utf8_strlen($this->request->post['product_name']) > 1000)) {
+ 				$json['error']['product_name'] = "Please enter the Product and Service Name";
+ 			}
+@@ -520,12 +522,14 @@ class ControllerProductCategory extends Controller {
+ 				$json['error']['unit'] = "Please select the Unit";
+ 			}
+ 			
+-			if (isset($this->request->post['social_groups']) && empty($this->request->post['social_groups']) 
++			if ((!isset($this->request->post['social_groups']) || empty($this->request->post['social_groups'])) 
+ 					&& utf8_strlen($this->request->post['other_group_text']) == 0) {
+-				$json['error']['usage'] = "Please choose the atleaset one Social Group or Enter in others options";
++				$json['error']['other_group_text'] = "Please choose the atleaset one Social Group or Enter in others options";
+ 			}
+ 
+-			if (!isset($json['error']) && isset($this->request->post['social_groups']) && empty($this->request->post['social_groups'])) {
++			$paid_sellers = array();
++			$this->load->model('account/catalog/seller');
++			if (!isset($json['error'])) {
+ 				$message = '';
+ 				$mail = new Mail();
+ 				$mail->protocol = $this->config->get('config_mail_protocol');
+@@ -535,14 +539,18 @@ class ControllerProductCategory extends Controller {
+ 				$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
+ 				$mail->smtp_port = $this->config->get('config_mail_smtp_port');
+ 				$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
+-				$this->load->model('account/catalog/seller');
+-				$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
++
+ 				$email[] = $this->config->get('config_email');
+-				if($sellerdetails){
+-					foreach($sellerdetails as $sellerdetailsrow){
+-						$email[] = $sellerdetailsrow['email'];
+-					}
+-				} 
++				if(isset($this->request->post['social_groups']) && !empty($this->request->post['social_groups'])) {
++					$sellerdetails = $this->model_account_catalog_seller->getPaidSellerDetails($this->request->post['social_groups']);
++					$json['sellers'] = $sellerdetails;
++					if($sellerdetails){
++						foreach($sellerdetails as $sellerdetailsrow) {
++							$paid_sellers[] = $sellerdetailsrow;
++							$email[] = $sellerdetailsrow['email'];
++						}
++					} 
++				}
+ 				$customer_email = $this->customer->getEmail();
+ 				$mail->setTo($email);					
+ 				$mail->setFrom($customer_email);
+@@ -564,9 +572,13 @@ class ControllerProductCategory extends Controller {
+ 					$message .= 'Other Option: '.$this->request->post['other_group_text'].'<br/>';
+ 				}
+ 				$mail->setHtml($message);
+-				$mail->send();
+-				$json['success'] = "Enquiry has been submitted successfully";				
++				$mail->send();			
+ 			}
++
++			if (!isset($json['error'])) {
++				$this->model_account_catalog_seller->saveProductEnquires($this->request->post, (int)$this->session->data['user_id'], $paid_sellers);
++				$json['success'] = "Enquiry has been submitted successfully";
++			}				
+ 		}
+ 
+ 		$this->response->setOutput(json_encode($json));
+diff --git a/catalog/controller/redzone/redzone.php b/catalog/controller/redzone/redzone.php
+index e73ea5d..2442cce 100644
+--- a/catalog/controller/redzone/redzone.php
++++ b/catalog/controller/redzone/redzone.php
+@@ -12,6 +12,13 @@ class ControllerRedzoneRedzone extends Controller {
+ 		} else {
+ 			$_SESSION['chat_username'] = $this->session->data['customer_id'];
+ 		}
++		$this->load->model('account/catalog/seller');
++		$seller_info = $this->model_account_catalog_seller->getSeller($this->session->data['customer_id']);
++
++		if(!isset($seller_info['is_paid']) || $seller_info['is_paid'] == 0) {
++			$this->response->redirect($this->url->link('simple_blog/article', 'token=' . $this->session->data['token'] , true));
++		}
++
+ 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
+ 			$data = $this->request->post;
+ 			$data['added_by'] =  $this->customer->isLogged();
+diff --git a/catalog/controller/simple_blog/article.php b/catalog/controller/simple_blog/article.php
+index faad958..133a014 100644
+--- a/catalog/controller/simple_blog/article.php
++++ b/catalog/controller/simple_blog/article.php
+@@ -77,6 +77,8 @@ if (isset($this->request->get['filter_group'])) {
+ 			$this->load->model('account/catalog/seller');
+ 			$seller_info = $this->model_account_catalog_seller->getSeller($data['userid']);
+ 
++			$data['current_seller_info'] = $seller_info;
++
+ 			if (!empty($seller_info) && is_file(DIR_IMAGE . $seller_info['logo'])) {
+ 				$data['thumb'] = $this->model_tool_image->resize($seller_info['logo'], 50, 50);
+ 			} else {
+diff --git a/catalog/model/account/catalog/seller.php b/catalog/model/account/catalog/seller.php
+index 302da92..a57329b 100644
+--- a/catalog/model/account/catalog/seller.php
++++ b/catalog/model/account/catalog/seller.php
+@@ -19,8 +19,8 @@ class ModelAccountCatalogSeller extends Model {
+ 	
+ 	public function getPaidSellerDetails($groupIds = array()) {
+ 		$query = $this->db->query(
+-			"SELECT DISTINCT * FROM " . DB_PREFIX . "seller as s ".
+-			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id == sgu.social_group_user_id".
++			"SELECT s.* FROM " . DB_PREFIX . "seller as s ".
++			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id = sgu.social_group_user_id ".
+ 			"WHERE status = 1 and is_paid = 1 and approved=1 AND sgu.social_group_id IN (" . JOIN(",", $groupIds) . ")"
+ 		);
+ 
+@@ -97,4 +97,28 @@ class ModelAccountCatalogSeller extends Model {
+ 
+ 		return $query->row['total'];
+ 	}
++
++	public function saveProductEnquires($data, $userId, $paid_sellers) {
++		$enquiry_qry = "INSERT INTO " . DB_PREFIX . "product_enquries VALUES ". 
++			"(null, '".$data['product_name']."', '".$data['product_qty']."', '".$data['unit']."', '".$data['other_group_text']."', NOW(), ".$userId.")";
++		$this->db->query($enquiry_qry);
++
++		$enquiry_id = $this->db->getLastId();
++
++		if(isset($data['social_groups']) && !empty($data['social_groups'])) {
++			$enquiry_groups_qry = array();
++			foreach($data['social_groups'] as $groupd_id) {
++				$enquiry_groups_qry[] = "(".$enquiry_id.", ".$groupd_id.")";
++			}
++			$this->db->query("INSERT INTO " . DB_PREFIX . "product_enquries_groups VALUES " . join(",", $enquiry_groups_qry));
++		}
++
++		if(!empty($paid_sellers)) {
++			$enquiry_mails = array();
++			foreach($paid_sellers as $seller) {
++				$enquiry_mails[] = "(".$enquiry_id.", ".$seller['seller_id'].", '".$seller['email']."')";
++			}
++			$this->db->query("INSERT INTO " . DB_PREFIX . "product_enquries_mail VALUES " . join(",", $enquiry_mails));
++		}
++	}
+ }
+diff --git a/catalog/view/theme/default/template/extension/module/simple_blog/article.tpl b/catalog/view/theme/default/template/extension/module/simple_blog/article.tpl
+index 4bcf2a3..d32727d 100644
+--- a/catalog/view/theme/default/template/extension/module/simple_blog/article.tpl
++++ b/catalog/view/theme/default/template/extension/module/simple_blog/article.tpl
+@@ -130,7 +130,13 @@
+                <div class="nav_collapse">
+         <ul class="nav navbar-nav navbar-left">
+             <li id="mygroup_list" class="dropdown">
+-                <a href="index.php?route=redzone/redzone" role="button" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">Blacklist sellers <?php if($new_blacklist!=0){ ?><span style="background: #961112;padding: 1px 8px;color: #fff;border-radius: 100%;font-size: 13px;font-weight: bold;"><?php echo $new_blacklist; ?></span><?php } ?></a>
++				<a 
++				<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
++				href="index.php?route=redzone/redzone" 
++				<?php } else { ?>
++				href="index.php?route=redzone/redzone" 
++				<?php } ?>
++                role="button" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">Blacklist sellers <?php if($new_blacklist!=0){ ?><span style="background: #961112;padding: 1px 8px;color: #fff;border-radius: 100%;font-size: 13px;font-weight: bold;"><?php echo $new_blacklist; ?></span><?php } ?></a>
+                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">My Groups</a>
+                 <ul class="dropdown-menu">
+ 				<?php if($user_group_lists_in){?>
+@@ -143,16 +149,20 @@
+                 </ul>
+             </li>
+ 
+-           <!-- <li class="dropdown">
++           <?php /** <li class="dropdown">
+                 <a href="#addgroups" class="dropdown-toggle fancybox"><img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">Add Groups</a>
+-            </li> -->
++            </li> **/ ?>
+ 			
+ 			<li id="joingroup_list" class="dropdown">
+                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/insight.png">Join Groups</a>
+                 <ul class="dropdown-menu">
+ 				<?php if($group_lists){?>
+                    <?php foreach($group_lists as $group_rows){?>
++				   <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+                     <li class="join_group_lists_li<?php echo $group_rows['social_group_id'];?>"><a class="fancybox" href="#join_group_lists<?php echo $group_rows['social_group_id'];?>"><?php echo $group_rows['name'];?></a></li>
++					<?php } else { ?>
++					<li><a class="fancybox" href="#paidtocontinue"><?php echo $group_rows['name'];?></a></li>
++					<?php } ?>
+ 				   <?php } ?>
+ 				<?php } else { ?>
+ 					<li class="group_lists_li">No Groups found</li>
+@@ -193,7 +203,7 @@
+ 
+       <div class="col-sm-8 col-lg-7 col-xs-12 post_part">
+ <?php
+-if(!empty($check_availability))
++if(!empty($check_availability) && isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1)
+ {
+ ?>
+          <div class="latest_post add_post">
+@@ -217,7 +227,7 @@ if(!empty($check_availability))
+ 
+                     <div class="post_area col-sm-10 col-lg-10">
+ 					<form name="add_post" method="post" action="<?php echo $action;?>">
+-                                        <input type="hidden" name="social_group_id" id="social_group_id" value="<?php if(isset($_GET['filter_group'])){ echo $_GET['filter_group']; } ?>">
++                    <input type="hidden" name="social_group_id" id="social_group_id" value="<?php if(isset($_GET['filter_group'])){ echo $_GET['filter_group']; } ?>">
+                       <textarea class="form-control" name="comment" placeholder="What’s on your mind?"></textarea>
+                        <button type="submit" class="btn btn-warning">post <span class="glyphicon glyphicon-send"></span></button>
+ 					</form>
+@@ -319,18 +329,35 @@ if(!empty($check_availability))
+ 
+                          </div>
+                          <div class=" col-sm-3 col-lg-3">
+-                          <a href="#sharepost<?php echo $article['simple_blog_article_id']; ?>" class="share_article fancybox"><img src="catalog/view/theme/mystonestore/img/icons/share.png"><span>Share</span></a>
++						 <a 
++						 <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
++						 href="#sharepost<?php echo $article['simple_blog_article_id']; ?>"
++						 <?php } else { ?>
++						 href="#paidtocontinue"
++						 <?php } ?>
++                           class="share_article fancybox"><img src="catalog/view/theme/mystonestore/img/icons/share.png"><span>Share</span></a>
+                          </div>
+ 						 <?php if($article['author_user_id'] != $userid){ ?>
+ 						 <div class=" col-sm-3 col-lg-2">
+-                              <a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $article['author_user_id']; ?>','<?php echo $article['author_name']; ?>')" class="chat_article"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Chat</span></a>
++						 <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
++						 <a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $article['author_user_id']; ?>','<?php echo $article['author_name']; ?>')" class="chat_article">
++						 <?php } else { ?>
++						 <a href="#paidtocontinue" class="chat_article fancybox"
++						 <?php } ?>
++                         <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Chat</span></a>
+                          </div>
+ 						 <?php } ?>
+                     </div>
+                    <div class="share_groups col-sm-3 col-lg-2 col-xs-10">
+                          <?php if($article['same_user']!=1){ ?>
+                              <div class="share_groups_inner">
+-                                  <a href="#spampost<?php echo $article['simple_blog_article_id']; ?>" class="share_article fancybox"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Spam</span></a>
++							 	<a 
++								<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
++								href="#spampost<?php echo $article['simple_blog_article_id']; ?>" 
++								<?php } else { ?>
++								href="#paidtocontinue" 
++								<?php } ?>
++                                 class="share_article fancybox"> <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Spam</span></a>
+                              </div>
+                          <?php } ?>
+                     </div>
+@@ -414,6 +441,30 @@ if(!empty($check_availability))
+ 					</div>	   
+ 			</div>
+ 		</div>
++
++		<div class="well read_more_section" id="commentpost<?php echo $article['simple_blog_article_id']; ?>">
++			<div class="pop_well">			  
++			 <div class="row">
++					<div id="comment_list<?php echo $article['simple_blog_article_id']; ?>">
++					<?php if($article['comments']) { ?>
++						<?php foreach ($article['comments'] as $comment) { ?>
++						<div class="user_db col-sm-2 col-lg-2">
++						   <img src="<?php echo $comment['cthumb']; ?>" />
++						</div>		
++						<div class="user_name col-sm-10 col-lg-10">
++						  <h4>@<?php echo $comment['author']; ?></h4>
++						  <span><?php echo $comment['date_added']; ?></span>
++						</div>
++						<div class="user_content col-sm-12 col-lg-12">
++						<p><?php echo $comment['comment']; ?></p>
++						</div>
++						<?php } ?>	
++					<?php } ?>
++					</div>												
++					</div>	   
++			</div>
++		</div>
++		<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+ 		<div class="well read_more_section" id="sharepost<?php echo $article['simple_blog_article_id']; ?>">
+ 			<div class="pop_well">			  
+ 			 <div class="row">
+@@ -452,28 +503,6 @@ if(!empty($check_availability))
+ 					</div>	   
+ 			</div>
+ 		</div>
+-		<div class="well read_more_section" id="commentpost<?php echo $article['simple_blog_article_id']; ?>">
+-			<div class="pop_well">			  
+-			 <div class="row">
+-					<div id="comment_list<?php echo $article['simple_blog_article_id']; ?>">
+-					<?php if($article['comments']) { ?>
+-						<?php foreach ($article['comments'] as $comment) { ?>
+-						<div class="user_db col-sm-2 col-lg-2">
+-						   <img src="<?php echo $comment['cthumb']; ?>" />
+-						</div>		
+-						<div class="user_name col-sm-10 col-lg-10">
+-						  <h4>@<?php echo $comment['author']; ?></h4>
+-						  <span><?php echo $comment['date_added']; ?></span>
+-						</div>
+-						<div class="user_content col-sm-12 col-lg-12">
+-						<p><?php echo $comment['comment']; ?></p>
+-						</div>
+-						<?php } ?>	
+-					<?php } ?>
+-					</div>												
+-					</div>	   
+-			</div>
+-		</div>
+ 		<div class="well read_more_section" id="spampost<?php echo $article['simple_blog_article_id']; ?>">
+ 			<div class="pop_well">			  
+ 			 <div class="row">
+@@ -493,11 +522,12 @@ if(!empty($check_availability))
+ 					</div>	   
+ 			</div>
+ 		</div>
++		<?php } ?>
+      <?php } } ?>
+ 
+ 
+ 
+-
++<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+ <div class="well" id="video_upload">
+ <div class="pop_well">
+ 
+@@ -603,7 +633,7 @@ if(!empty($check_availability))
+ 
+  </div>
+    
+-</div>
++</div><?php /** ?>
+ <div class="well read_more_section" id="addgroups">
+ 	<div class="pop_well">			  
+ 	 <div class="row">
+@@ -624,7 +654,8 @@ if(!empty($check_availability))
+ 				</form>
+ 			</div>	   
+ 	</div>
+-</div>
++</div> <?php **/ ?>
++<?php } ?>
+ <?php if($user_group_lists){?>
+    <?php foreach($user_group_lists as $group_rows){?>
+ 	<div class="well read_more_section" id="group_lists<?php echo $group_rows['social_group_id'];?>">
+@@ -703,6 +734,24 @@ if(!empty($check_availability))
+    <?php } ?>
+ <?php } ?>
+ 
++<a href="#paidtocontinue" class="fancybox" id="openpaidtocontinue"></a>
++		<div class="well read_more_section" id="paidtocontinue">
++			<div class="pop_well">			  
++			 <div class="row">
++						<div class="user_db col-sm-2 col-lg-2">
++						   <img src="<?php echo $thumb;?>" />
++						</div>		
++						<div class="user_name col-sm-10 col-lg-10">
++						  <h4>Access denied!</h4>
++						</div>
++						<div class="user_content col-sm-12 col-lg-12">
++							<p>&nbsp;</p>
++							<p>Paid members only able to access this action. Please contact administrator to procedd further.</p>							
++						</div>
++					</div>	   
++			</div>
++		</div>
++
+  <script>
+         
+       $('.fancybox').fancybox();
+@@ -712,6 +761,7 @@ if(!empty($check_availability))
+     </script>
+ <script>
+ function add_likes(values,type){
++	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+ 	var urls = 'action=like&article_id='+values;
+ 	var liked_article = $('#liked_article'+values);
+ 	var unliked_article = $('#unliked_article'+values);
+@@ -734,6 +784,9 @@ function add_likes(values,type){
+ 		   console.log(textStatus, errorThrown);
+ 		}
+ 	});
++	<?php } else { ?>
++	$("#openpaidtocontinue").trigger('click');
++	<?php } ?>
+ }
+ function post_delete(value){
+ 	if(confirm('ARE YOU SURE DO  YOU WANT TO REMOVE')){
+@@ -810,6 +863,7 @@ $('.progress').hide();
+   
+ }
+ function comment_article(values){
++	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+ 	var comment_text = $('#comment_text'+values).val();
+ 	var name = '<?php echo $username;?>';
+ 	var user_id = '<?php echo $userid;?>';
+@@ -841,8 +895,12 @@ function comment_article(values){
+ 			}
+ 		}
+ 	});
++	<?php } else { ?>
++	$("#openpaidtocontinue").trigger('click');
++	<?php } ?>
+ }
+ function spam_article(values){
++	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
+ 	var spam_text = $('#spam_text'+values).val();
+ 	var name = '<?php echo $username;?>';
+ 	var user_id = '<?php echo $userid;?>';
+@@ -873,6 +931,9 @@ function spam_article(values){
+ 			}
+ 		}
+ 	});
++	<?php } else { ?>
++	$("#openpaidtocontinue").trigger('click');
++	<?php } ?>
+ }
+ function group_delete(values){
+ 	$.ajax({
+diff --git a/catalog/view/theme/mystonestore/css/style.css b/catalog/view/theme/mystonestore/css/style.css
+index 851e1d4..c40ffb5 100644
+--- a/catalog/view/theme/mystonestore/css/style.css
++++ b/catalog/view/theme/mystonestore/css/style.css
+@@ -346,7 +346,7 @@
+       font-family: "Roboto-Regular";
+       margin: 0 0 10px;
+   }
+-  .panel-default > .panel-heading,.alert-danger,.btn-info,.alert-success {
++  .panel-default > .panel-heading,.btn-info,.alert-success {
+       background-color: #7FB546;
+       border-color: #7FB546;
+       color: #fff;
+diff --git a/catalog/view/theme/mystonestore/template/common/footer.tpl b/catalog/view/theme/mystonestore/template/common/footer.tpl
+index 8a2814d..59db8e3 100644
+--- a/catalog/view/theme/mystonestore/template/common/footer.tpl
++++ b/catalog/view/theme/mystonestore/template/common/footer.tpl
+@@ -148,6 +148,7 @@
+ 
+ </div>
+ 
++<?php if(isset($userid)) { ?>
+ <div class="well" id="fadeandscale_three">   
+ 	<h3>We Are Hear To Help !</h3>   
+ 	<div class="helpingforms">
+@@ -160,7 +161,6 @@
+ 				<div class="input-group my-group form_quantity_group">
+ 					<input type="text" class="form-control" name="product_qty" placeholder="Quantity">
+ 					<select class="selectpicker form-control" id="unit" name="unit" title="Please select a unit ...">
+-						<option value="0">Unit</option>
+ 						<option value="Unit 1">Unit 1</option>
+ 						<option value="Unit 2">Unit 2</option>
+ 						<option value="Unit 3">Unit 3</option>
+@@ -196,14 +196,15 @@
+ 	</div>
+ </div>
+ 
+-
++<?php } ?>
+ 
+ 
+ <script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
+ 
+ <script type="text/javascript">
+-
++	<?php if(isset($userid)) { ?>
+ 	function submit_requirement(){
++		var form_key
+ 		$.ajax({
+ 			type: 'POST',
+ 			url: 'index.php?route=product/category/submitRequirement',
+@@ -217,20 +218,36 @@
+ 				$('#help_submit_button').text('Submit Your Requirment');
+ 			},
+ 			success: function(data) {
+-				$('.alert').remove();
++				data = JSON.parse(data);
++				$("#requirement_form").find('.alert').each(function(){$(this).remove()});
++				$("#requirement_form").find('.error_message').each(function(){$(this).remove()});
+ 				if (data['error']) {
+-					$.each(data['error'] , function(i, val) {
+-						$('#'+data['error'][i]).after('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + val + '</div>');
++					$("<div class=\"alert alert-danger\"></div>").prependTo($("#requirement_form")).html('Please check the error messages below!');
++					$("#requirement_form").find(":input").each(function(){
++						if(data['error'][this.name]) {
++							var msg = data['error'][this.name];
++							var $parent = $(this).parents('.form-group');
++							var $em = $("<div class=\"error_message text-danger\"></div>").appendTo($parent);
++							$em.css('clear', 'both');
++							$em.html(msg);
++						}
+ 					});
+ 				}
+ 				if (data['success']) {
+-					location.reload();
++					$("<div class=\"alert alert-success\"></div>").prependTo($("#requirement_form")).html(data['success']);
+ 				}
+ 			}
+ 		});
+ 	}
+-
++	<?php } ?>
+   	$(document).ready(function () {
++		<?php if(!isset($userid)) { ?>
++		$('#product_help').removeClass('fadeandscale_three_open');
++		$('#product_help').click(function(e){
++			e.preventDefault();
++			window.location = 'index.php?route=account/login';
++		});
++		<?php } ?>
+ 		$('#fadeandscale_three,#fadeandscale_four').popup({pagecontainer: '.container',transition: 'all 0.3s'});
+ 
+ 		$('.testimonials-slider').bxSlider({
+@@ -244,7 +261,6 @@
+ 		});
+ 	});
+ </script>
+-<script>$(document).ready(function () });</script>
+ 
+ <?php if(isset($userid)) { ?>
+ <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
+diff --git a/catalog/view/theme/mystonestore/template/product/category.tpl b/catalog/view/theme/mystonestore/template/product/category.tpl
+index 72986ba..345205a 100644
+--- a/catalog/view/theme/mystonestore/template/product/category.tpl
++++ b/catalog/view/theme/mystonestore/template/product/category.tpl
+@@ -145,12 +145,9 @@
+ <?php } ?>
+ <?php if(!$logged){ ?>
+ <script>
+-$('#product_help').removeClass('fadeandscale_three_open');
++
+ $('.chat_sellers').removeAttr('onclick');
+-$('#product_help').click(function(e){
+-	e.preventDefault();
+-	window.location = 'index.php?route=account/login';
+-});
++
+ $('.chat_sellers').click(function(e){
+ 	e.preventDefault();
+ 	window.location = 'index.php?route=account/login';
+diff --git a/catalog/view/theme/mystonestore/template/redzone/redzone.tpl b/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
+index d0311cb..3807f72 100644
+--- a/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
++++ b/catalog/view/theme/mystonestore/template/redzone/redzone.tpl
+@@ -125,12 +125,7 @@
+ </div></div>
+ <?php if(!$logged){ ?>
+ <script>
+-$('#product_help').removeClass('fadeandscale_three_open');
+ $('.chat_sellers').removeAttr('onclick');
+-$('#product_help').click(function(e){
+-	e.preventDefault();
+-	window.location = 'index.php?route=account/login';
+-});
+ $('.chat_sellers').click(function(e){
+ 	e.preventDefault();
+ 	window.location = 'index.php?route=account/login';
+diff --git a/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl b/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
+index 6448601..8edfa63 100644
+--- a/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
++++ b/catalog/view/theme/mystonestore/template/redzone/redzone_details.tpl
+@@ -126,12 +126,8 @@
+ </div></div>
+ <?php if(!$logged){ ?>
+ <script>
+-$('#product_help').removeClass('fadeandscale_three_open');
++
+ $('.chat_sellers').removeAttr('onclick');
+-$('#product_help').click(function(e){
+-	e.preventDefault();
+-	window.location = 'index.php?route=account/login';
+-});
+ $('.chat_sellers').click(function(e){
+ 	e.preventDefault();
+ 	window.location = 'index.php?route=account/login';
+-- 
+2.15.1.windows.2
+

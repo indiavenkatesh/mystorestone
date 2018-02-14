@@ -344,7 +344,7 @@ if(!empty($check_availability) && isset($current_seller_info) && isset($current_
 						 <?php } else { ?>
 						 <a href="#paidtocontinue" class="chat_article fancybox"
 						 <?php } ?>
-                         <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">  Chat</span></a>
+                         <span> <img src="catalog/view/theme/mystonestore/img/icons/addgroup.png">Chat</span></a>
                          </div>
 						 <?php } ?>
                     </div>
