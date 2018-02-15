@@ -553,15 +553,16 @@ class ControllerProductCategory extends Controller {
 				}
 				$customer_email = $this->customer->getEmail();
 				$mail->setTo($email);					
-				$mail->setFrom($customer_email);
+				$mail->setFrom($this->config->get('config_email'));
 				$mail->setSender(html_entity_decode('User', ENT_QUOTES, 'UTF-8'));
 				$mail->setSubject(html_entity_decode('Product Enquiry', ENT_QUOTES, 'UTF-8'));
 
 				$social_group_names = array();
 				foreach($this->request->post['social_groups'] as $id) {
 					$social_group_names[] = $this->request->post['social_groups_texts'][$id];
-				}				
+				}
 				
+				$message .= 'Customer Email: '.$customer_email.'<br/>';				
 				$message .= 'Product and Service Name: '.$this->request->post['product_name'].'<br/>';
 				$message .= 'Product Quantity: '.$this->request->post['product_qty'].'<br/>';
 				$message .= 'Unit: '.$this->request->post['unit'].'<br/>';

@@ -42,17 +42,6 @@
         <li><a href="<?php echo $return; ?>"><?php echo $text_return; ?></a></li>
         <li><a href="<?php echo $transaction; ?>"><?php echo $text_transaction; ?></a></li>
         <li><a href="<?php echo $recurring; ?>"><?php echo $text_recurring; ?></a></li>
-
-			<?php /**	<!-- Message System Starts -->
-        <li><a href="<?php echo $message; ?>"><?php echo $text_message_system; ?>
-							<span class="alert_messages">
-								<?php if($alert_messages) { ?> 
-									<b>(<?php echo $alert_messages ?>)</b>
-								<?php } ?>
-							</span>
-						</a>
-				</li>
-				<!--  Message System Ends --> **/?> 
 			
       </ul>
       <!-- -->

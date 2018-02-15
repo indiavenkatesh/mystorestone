@@ -421,26 +421,26 @@ if(!empty($check_availability) && isset($current_seller_info) && isset($current_
 </div>  
 <?php if($articles) { ?>
 <?php foreach($articles as $article) { ?>
-	<div class="well read_more_section" id="readmore<?php echo $article['simple_blog_article_id']; ?>">
-			<div class="pop_well">			  
-			 <div class="row">
-						<div class="user_db col-sm-2 col-lg-2">
-						   <img src="<?php echo $article['thumb'];?>" />
-						</div>		
-						<div class="user_name col-sm-10 col-lg-10">
-						  <h4>@<?php echo $article['author_name']; ?></h4>
-						</div>
-						<div class="user_content col-sm-12 col-lg-12"> 
-								<p><?php echo $article['full_description']; ?></p>	
-						</div>
-						<?php if($article['image']){ ?>
-						<div class="post_img col-sm-12 col-lg-12">
-						   <img class="img-responsive" src="<?php echo $article['image']; ?>">
-						</div>
-						<?php } ?>
-					</div>	   
+<div class="well read_more_section" id="readmore<?php echo $article['simple_blog_article_id']; ?>">
+	<div class="pop_well">
+		<div class="row">
+			<div class="user_db col-sm-2 col-lg-2">
+				<img src="<?php echo $article['thumb'];?>" />
 			</div>
-		</div>
+			<div class="user_name col-sm-10 col-lg-10">
+				<h4>@<?php echo $article['author_name']; ?></h4>
+			</div>
+			<div class="user_content col-sm-12 col-lg-12">
+				<p><?php echo $article['full_description']; ?></p>
+			</div>
+			<?php if($article['image']){ ?>
+			<div class="post_img col-sm-12 col-lg-12">
+				<img class="img-responsive" src="<?php echo $article['image']; ?>">
+			</div>
+			<?php } ?>
+		</div>	   
+	</div>
+</div>
 
 		<div class="well read_more_section" id="commentpost<?php echo $article['simple_blog_article_id']; ?>">
 			<div class="pop_well">			  
@@ -529,55 +529,35 @@ if(!empty($check_availability) && isset($current_seller_info) && isset($current_
 
 <?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
 <div class="well" id="video_upload">
-<div class="pop_well">
+	<div class="pop_well">
+		<div class="create_post col-lg-12">
+			<ul class="nav navbar-nav">
+				<li><span><i class="glyphicon  glyphicon-pencil "></i>Create New Post</span></li>
+				<li><a href="#photo_upload" class="fancybox"><span><i class="glyphicon glyphicon-picture"></i>Add Photo</span></a></li>
+				<li><a href="#video_upload" class="fancybox"> <span><i class="glyphicon  glyphicon-film"></i>Add Videos</span></a></li>
+			</ul>
+		</div>
+		<div class="upload_file">
+			<form class="file_up">
+				<div class="col-sm-12 col-lg-12">
+					<div class="col-sm-6 col-lg-6">
+						<label class="video_text">Upload Your Videos</label>
+					</div>
+					<div class="col-sm-6 col-lg-6">
+						<input type="file" id="article_upload_video" name="video" accept="video/*" />
+					</div>
+				</div>
 
-      <div class="create_post col-lg-12">
-
-                     <ul class="nav navbar-nav">
-                         <li><span><i class="glyphicon  glyphicon-pencil "></i>Create New Post</span></li>
-                         <li><a href="#photo_upload" class="fancybox"><span><i class="glyphicon glyphicon-picture"></i>Add Photo</span></a></li>
-                         <li><a href="#video_upload" class="fancybox"> <span><i class="glyphicon  glyphicon-film"></i>Add Videos</span></a></li>
-
-
-                     </ul>
-					 
-					 
-					  
-      </div>
-	  
-	  <div class="upload_file">
-	       <form class="file_up">
-	  			  
-					  <div class="col-sm-12 col-lg-12">
-					  
-					     <div class="col-sm-6 col-lg-6">
-						     
-							 <label class="video_text">Upload Your Videos</label>
-						 </div>
-					       
-					    <div class="col-sm-6 col-lg-6">
-						
-						     <input type="file" id="article_upload_video" name="video" accept="video/*">
-							 
-						 </div>
-					  </div>
-					  
-					 <div class="col-sm-12 col-lg-12">
-			   
-
-			   <input type="submit" class="btn btn-warning" value="Post" onclick="upload_files('article_upload_video')">
-		  </div>
-
-		  </form>
-		   <div class="progress">
-        <div class="bar"></div >
-        <div class="percent">0%</div>
-
-           
-					  
+				<div class="col-sm-12 col-lg-12">
+					<input type="submit" class="btn btn-warning" value="Post" onclick="upload_files('article_upload_video')" />
+				</div>
+			</form>
+			<div class="progress">
+				<div class="bar"></div >
+				<div class="percent">0%</div>
+			</div>
+		</div>
 	</div>
-
- </div>
 </div>
 
 <div class="well" id="photo_upload">
@@ -633,6 +613,7 @@ if(!empty($check_availability) && isset($current_seller_info) && isset($current_
 
  </div>
    
+</div>
 </div><?php /** ?>
 <div class="well read_more_section" id="addgroups">
 	<div class="pop_well">			  
