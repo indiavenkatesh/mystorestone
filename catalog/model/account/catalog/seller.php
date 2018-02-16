@@ -100,7 +100,7 @@ class ModelAccountCatalogSeller extends Model {
 
 	public function saveProductEnquires($data, $userId, $paid_sellers) {
 		$enquiry_qry = "INSERT INTO " . DB_PREFIX . "product_enquries VALUES ". 
-			"(null, '".$data['product_name']."', '".$data['product_qty']."', '".$data['unit']."', '".$data['other_group_text']."', NOW(), ".$userId.")";
+			"(null, '".$data['product_name']."', '".$data['product_qty']."', '".$data['unit']."', '".$data['other_group_text']."', '".$data['description']."', NOW(), ".$userId.")";
 		$this->db->query($enquiry_qry);
 
 		$enquiry_id = $this->db->getLastId();

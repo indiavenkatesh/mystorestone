@@ -186,6 +186,10 @@
 					<input type="text" class="form-control" name="other_group_text" value="" placeholder="other options">
 				</div>
 			</div>
+			<div class="form-group">
+				<label>Description</label>
+				<textarea class="form-control" name="description" row="5"></textarea>
+			</div>
 			<div class="col-md-12 help_submit">
 				<button type="button" id="help_submit_button" onclick="submit_requirement(this)" class="btn btn-primary">Submit Your Requirment</button>
 			</div>

@@ -527,6 +527,10 @@ class ControllerProductCategory extends Controller {
 				$json['error']['other_group_text'] = "Please choose the atleaset one Social Group or Enter in others options";
 			}
 
+			if ((utf8_strlen($this->request->post['description']) < 3) || (utf8_strlen($this->request->post['product_name']) > 1000)) {
+				$json['error']['description'] = "Please enter the description which must have 3 letters";
+			}
+
 			$paid_sellers = array();
 			$this->load->model('account/catalog/seller');
 			if (!isset($json['error'])) {
@@ -572,6 +576,7 @@ class ControllerProductCategory extends Controller {
 				if (utf8_strlen($this->request->post['other_group_text']) > 0) {
 					$message .= 'Other Option: '.$this->request->post['other_group_text'].'<br/>';
 				}
+				$message .= 'Description: '.'<br/>'.$this->request->post['description'].'<br/>';
 				$mail->setHtml($message);
 				$mail->send();			
 			}
