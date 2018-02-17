@@ -1,7 +1,5 @@
-system/storage/cache
+system/storage/*
 image/cache
-system/storage/logs
-system/storage/modification
 
 
 #System Files
