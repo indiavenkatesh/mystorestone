@@ -151,15 +151,9 @@ class ControllerAccountAccount extends Controller {
 	public function checkstatus() {
 		$json = array();
 		$online_users =	$this->request->post['online_users'];
-		$online_users = json_decode($online_users);
 		if($online_users){
 			$this->load->model('account/customer');
-			foreach($online_users as $online_users_row){
-				$user_info = $this->model_account_customer->getCustomerOnlineStatus($online_users_row);
-				$json = array(
-					$online_users_row => $user_info['is_online']
-				);
-			}
+			$json['online_users'] = $this->model_account_customer->getOnlinePaidCustomers($online_users);
 		}
 
 		$this->response->addHeader('Content-Type: application/json');

@@ -4,7 +4,6 @@ Date: Fri, 9 Feb 2018 04:13:40 +0530
 Subject: [PATCH] Fixed in 07022018
 
 ---
- .gitignore                                         |  8 ++++
  catalog/controller/account/login.php               | 49 ++++++++++++++-----
  catalog/controller/common/header.php               |  3 ++
  catalog/controller/simple_blog/article.php         |  2 +-
@@ -23,30 +22,11 @@ Subject: [PATCH] Fixed in 07022018
  .../mystonestore/template/product/category.tpl     | 35 +++++++++-----
  chat/js/catgchat.js                                |  6 ++-
  chat/js/chat.js                                    |  2 +-
- .../admin/view/template/common/header.tpl          |  6 +--
- .../admin/view/template/common/menu.tpl            |  4 +-
- .../catalog/controller/common/header.php           |  2 +
- .../mystonestore/template/account/account.tpl      |  4 +-
- .../theme/mystonestore/template/module/account.tpl |  6 +--
  24 files changed, 246 insertions(+), 76 deletions(-)
  create mode 100644 .gitignore
  create mode 100644 catalog/view/theme/default/template/account/seller_login.tpl
  create mode 100644 catalog/view/theme/mystonestore/template/account/seller_login.tpl
 
-diff --git a/.gitignore b/.gitignore
-new file mode 100644
-index 0000000..328b352
---- /dev/null
-+++ b/.gitignore
-@@ -0,0 +1,8 @@
-+system/storage/cache
-+image/cache
-+system/storage/logs
-+
-+
-+#System Files
-+.DS_Store
-+Thumbs.db
 diff --git a/catalog/controller/account/login.php b/catalog/controller/account/login.php
 index c8b1b5f..77fad50 100644
 --- a/catalog/controller/account/login.php
@@ -748,116 +728,6 @@ index d1d48a4..f533720 100644
  		.appendTo($( "body" ));
  				   
  		$("#chatbox_"+chatboxtitle).css('bottom', '0px');
-diff --git a/system/storage/modification/admin/view/template/common/header.tpl b/system/storage/modification/admin/view/template/common/header.tpl
-index 5449db2..89d1c7d 100644
---- a/system/storage/modification/admin/view/template/common/header.tpl
-+++ b/system/storage/modification/admin/view/template/common/header.tpl
-@@ -42,8 +42,8 @@
-     <a href="<?php echo $home; ?>" class="navbar-brand"><img src="view/image/logo.png" alt="<?php echo $heading_title; ?>" title="<?php echo $heading_title; ?>" /></a></div>
-   <?php if ($logged) { ?>
-   <ul class="nav pull-right">
--
--		<!-- /****** Message System Starts *****/ -->
-+<?php /**
-+		<!-- Message System Starts -->
-     <li>
- 			<a href="<?php echo $link_message ?>" >
- 				<?php if($alert_messages) { ?>
-@@ -52,7 +52,7 @@
- 				<i class="fa fa-envelope fa-lg"></i>
- 			</a>
- 		</li>
--		<!-- /****** Message System Ends *****/ -->
-+		<!-- Message System Ends  --> **/ ?>
- 		
-     <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"><span class="label label-danger pull-left"><?php echo $alerts; ?></span> <i class="fa fa-bell fa-lg"></i></a>
-       <ul class="dropdown-menu dropdown-menu-right alerts-dropdown">
-diff --git a/system/storage/modification/admin/view/template/common/menu.tpl b/system/storage/modification/admin/view/template/common/menu.tpl
-index cc93b22..3906794 100644
---- a/system/storage/modification/admin/view/template/common/menu.tpl
-+++ b/system/storage/modification/admin/view/template/common/menu.tpl
-@@ -1,13 +1,13 @@
- <ul id="menu">
-   <li id="dashboard"><a href="<?php echo $home; ?>"><i class="fa fa-dashboard fa-fw"></i> <span><?php echo $text_dashboard; ?></span></a></li>
- 
--	<!-- /****** Message System Starts *****/ -->
-+	<?php /** <!-- Message System Starts -->
-   <li id="message"><a class="parent"><i class="fa fa-envelope fa-fw"></i> <span><?php echo $text_message; ?></span></a>
- 		<ul>
- 			<li><a href="<?php echo $message; ?>"><?php echo $text_message; ?></a></li>
- 		</ul>
- 	</li>
--	<!-- /****** Message System Ends *****/ -->
-+	<!-- Message System Ends --> **/ ?>
-   <li id="catalog"><a class="parent"><i class="fa fa-tags fa-fw"></i> <span><?php echo $text_catalog; ?></span></a>
-     <ul>
-       <li><a href="<?php echo $category; ?>"><?php echo $text_category; ?></a></li>
-diff --git a/system/storage/modification/catalog/controller/common/header.php b/system/storage/modification/catalog/controller/common/header.php
-index 9cd92fd..1da6452 100644
---- a/system/storage/modification/catalog/controller/common/header.php
-+++ b/system/storage/modification/catalog/controller/common/header.php
-@@ -102,6 +102,7 @@ class ControllerCommonHeader extends Controller {
- 		$data['telephone'] = $this->config->get('config_telephone');
- 		$data['logged'] = $this->customer->isLogged();
- 		$data['seller_social_site'] = '';
-+		$data['customer_name'] = '';
-     if (!$this->customer->isLogged()) {
-     $data['wishlist'] = $this->url->link('account/wishlist', '', true);
- 		$data['account'] = $this->url->link('account/account', '', true);
-@@ -111,6 +112,7 @@ class ControllerCommonHeader extends Controller {
- 		$data['transaction'] = $this->url->link('account/transaction', '', true);
- 		$data['download'] = $this->url->link('account/download', '', true);
-     } else {
-+		$data['customer_name'] = $this->customer->getFirstName() . ' ' . $this->customer->getLastName();
-     $data['wishlist'] = $this->url->link('account/wishlist', 'token=' . $this->session->data['token'], true);
- 		$data['account'] = $this->url->link('account/account', 'token=' . $this->session->data['token'], true);
- 		$data['register'] = $this->url->link('account/register', 'token=' . $this->session->data['token'], true);
-diff --git a/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl b/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
-index e54b466..2d74676 100644
---- a/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
-+++ b/system/storage/modification/catalog/view/theme/mystonestore/template/account/account.tpl
-@@ -43,7 +43,7 @@
-         <li><a href="<?php echo $transaction; ?>"><?php echo $text_transaction; ?></a></li>
-         <li><a href="<?php echo $recurring; ?>"><?php echo $text_recurring; ?></a></li>
- 
--				<!-- /****** Message System Starts *****/ -->
-+			<?php /**	<!-- Message System Starts -->
-         <li><a href="<?php echo $message; ?>"><?php echo $text_message_system; ?>
- 							<span class="alert_messages">
- 								<?php if($alert_messages) { ?> 
-@@ -52,7 +52,7 @@
- 							</span>
- 						</a>
- 				</li>
--				<!-- /****** Message System Ends *****/ -->
-+				<!--  Message System Ends --> **/?> 
- 			
-       </ul>
-       <!-- -->
-diff --git a/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl b/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
-index 458ed77..2d50988 100644
---- a/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
-+++ b/system/storage/modification/catalog/view/theme/mystonestore/template/module/account.tpl
-@@ -7,8 +7,8 @@
-   <a href="<?php echo $edit; ?>" class="list-group-item"><?php echo $text_edit; ?></a> <a href="<?php echo $password; ?>" class="list-group-item"><?php echo $text_password; ?></a>
-   <?php } ?>
-   <a href="<?php echo $address; ?>" class="list-group-item"><?php echo $text_address; ?></a> <a href="<?php echo $wishlist; ?>" class="list-group-item"><?php echo $text_wishlist; ?></a> <a href="<?php echo $order; ?>" class="list-group-item"><?php echo $text_order; ?></a> <a href="<?php echo $download; ?>" class="list-group-item"><?php echo $text_download; ?></a><a href="<?php echo $recurring; ?>" class="list-group-item"><?php echo $text_recurring; ?></a> <a href="<?php echo $reward; ?>" class="list-group-item"><?php echo $text_reward; ?></a> <a href="<?php echo $return; ?>" class="list-group-item"><?php echo $text_return; ?></a> <a href="<?php echo $transaction; ?>" class="list-group-item"><?php echo $text_transaction; ?></a> <a href="<?php echo $newsletter; ?>" class="list-group-item"><?php echo $text_newsletter; ?></a>
--
--		<!-- /****** Message System Starts *****/ -->
-+<?php /**
-+		<!-- Message System Starts -->
- 		<a href="<?php echo $message; ?>" class="list-group-item"><?php echo $text_message_system; ?>
- 			<span class="alert_messages">
- 				<?php if($alert_messages) { ?> 
-@@ -16,7 +16,7 @@
- 				<?php } ?>
- 			</span>
- 		</a>
--		<!-- /****** Message System Ends *****/ -->
-+		<!-- Message System Ends --> **/ ?>
- 		
-   <?php if ($logged) { ?>
-   <?php if ($seller == 1) { ?>
 -- 
 2.15.1.windows.2
 
