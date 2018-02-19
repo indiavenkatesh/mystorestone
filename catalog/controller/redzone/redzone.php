@@ -13,15 +13,18 @@ class ControllerRedzoneRedzone extends Controller {
 			$_SESSION['chat_username'] = $this->session->data['customer_id'];
 		}
 		$this->load->model('account/catalog/seller');
-		$seller_info = $this->model_account_catalog_seller->getSeller($this->session->data['customer_id']);
+		$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($this->session->data['customer_id']);
 
 		if(!isset($seller_info['is_paid']) || $seller_info['is_paid'] == 0) {
 			$this->response->redirect($this->url->link('simple_blog/article', 'token=' . $this->session->data['token'] , true));
 		}
-
-		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
+		
+		$data['search_text'] = '';
+		if (($this->request->server['REQUEST_METHOD'] == 'POST') && isset($this->request->post['do_search'])) {
+			$data['search_text'] = $this->request->post['search'];
+		} else if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			$data = $this->request->post;
-			$data['added_by'] =  $this->customer->isLogged();
+			$data['added_by'] =  $this->customer->getId();
 			$redzone_id = $this->model_redzone_redzone->new_redzone($data);
 			unset($this->request->post['heading']);
 			unset($this->request->post['companyname']); 
@@ -36,8 +39,10 @@ class ControllerRedzoneRedzone extends Controller {
 		} 
 		//getting approved redlist from database
 		$this->load->model('localisation/country'); 
+		
 		$countries = $this->model_localisation_country->getCountries();
-		$redlists = $this->model_redzone_redzone->get_redzones();
+		$redlists = $this->model_redzone_redzone->get_redzones($data['search_text']);
+		$data['redlists'] = array();
 		foreach ($redlists as $key => $redlist) {
 			foreach ($countries as $key => $country) {
 				if($redlist['country']==$country['country_id']){

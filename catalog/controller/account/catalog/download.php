@@ -3,12 +3,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	private $error = array();
 
 	public function index() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -24,12 +24,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	public function add() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/add', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/add', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -67,12 +67,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	public function edit() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/edit', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/edit', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -110,12 +110,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	public function delete() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/delete', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/delete', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -155,12 +155,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	protected function getList() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -318,12 +318,12 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	protected function getForm() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/add', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/download/add', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -454,8 +454,8 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	protected function validateForm() {
-  $seller_id = $this->customer->getId();
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+  $seller_id = $this->customer->getSellerId();
+		if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
@@ -482,8 +482,8 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	protected function validateDelete() {
-  $seller_id = $this->customer->getId();
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+  $seller_id = $this->customer->getSellerId();
+		if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		} 
 
@@ -501,14 +501,14 @@ class ControllerAccountCatalogDownload extends Controller {
 	}
 
 	public function upload() {
-                $seller_id = $this->customer->getId();
+                $seller_id = $this->customer->getSellerId();
                 $directory = DIR_DOWNLOAD . $seller_id;
 		$this->load->language('account/catalog/download');
 
 		$json = array();
 
 		// Check user has permission
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		}
 

@@ -30,6 +30,20 @@
         <h3 class="panel-title"><i class="fa fa-list"></i> <?php echo $text_list; ?></h3>
       </div>
       <div class="panel-body">
+       <div class="row my-2">
+  <div class="col-lg-6 col-sm-6 col-xs-12 table_search">
+    <form action="<?php echo $action; ?>" method="post" name="redzone" enctype="multipart/form-data" class="form-horizontal">
+    <input type="hidden" name="do_search" value="1" />
+      <div class="input-group add-on">
+    <input type="text" class="form-control" name="search" aria-describedby="emailHelp" placeholder="Search" value="<?php echo $search_text; ?>">
+        
+        <div class="input-group-btn">
+          <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
         <!--<div class="well">
           <div class="row">
             <div class="col-sm-3">

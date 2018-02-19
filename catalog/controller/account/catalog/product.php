@@ -3,12 +3,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	private $error = array();
 
 	public function index() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -25,12 +25,12 @@ class ControllerAccountCatalogProduct extends Controller {
 
 	public function add() {
     //$data['token'] = $this->session->data['token'];
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/add', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/add', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -88,12 +88,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	public function edit() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/edit', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/edit', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -151,12 +151,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	public function delete() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/delete', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/delete', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -216,12 +216,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	public function copy() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/copy', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/copy', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -281,12 +281,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	protected function getList() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -591,12 +591,12 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	protected function getForm() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/add', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/product/add', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -1419,8 +1419,8 @@ class ControllerAccountCatalogProduct extends Controller {
        }
 	
 	protected function validateForm() {
-  $seller_id = $this->customer->getId();
-    if ($this->customer->hasSellerPermission($seller_id) == 0) {
+  $seller_id = $this->customer->getSellerId();
+    if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 		foreach ($this->request->post['product_description'] as $language_id => $value) {
@@ -1459,16 +1459,16 @@ class ControllerAccountCatalogProduct extends Controller {
 	}
 
 	protected function validateDelete() {
-  $seller_id = $this->customer->getId();
-    if ($this->customer->hasSellerPermission($seller_id) == 0) {
+  $seller_id = $this->customer->getSellerId();
+    if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 		return !$this->error;
 	}
 
 	protected function validateCopy() {
-  $seller_id = $this->customer->getId();
-    if ($this->customer->hasSellerPermission($seller_id) == 0) {
+  $seller_id = $this->customer->getSellerId();
+    if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 		return !$this->error;

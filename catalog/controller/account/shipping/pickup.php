@@ -3,12 +3,12 @@ class ControllerAccountShippingPickup extends Controller {
 	private $error = array();
 
 	public function index() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/shipping/pickup', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/shipping/pickup', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -104,7 +104,7 @@ class ControllerAccountShippingPickup extends Controller {
 
 	protected function validate() {
 		$seller_id = $this->customer->getId();
-    if ($this->customer->hasSellerPermission($seller_id) == 0) {
+    if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 

@@ -1,7 +1,7 @@
 <?php
 class ModelAccountCatalogCoupon extends Model {
 	public function addCoupon($data) {
-    $seller_id = $this->customer->getId(); 
+    $seller_id = $this->customer->getSellerId(); 
      
 		$this->db->query("INSERT INTO " . DB_PREFIX . "coupon SET seller_id = '" . (int)$seller_id . "', name = '" . $this->db->escape($data['name']) . "', code = '" . $this->db->escape($data['code']) . "', discount = '" . (float)$data['discount'] . "', type = '" . $this->db->escape($data['type']) . "', total = '" . (float)$data['total'] . "', logged = '" . (int)$data['logged'] . "', shipping = '" . (int)$data['shipping'] . "', date_start = '" . $this->db->escape($data['date_start']) . "', date_end = '" . $this->db->escape($data['date_end']) . "', uses_total = '" . (int)$data['uses_total'] . "', uses_customer = '" . (int)$data['uses_customer'] . "', status = '" . (int)$data['status'] . "', date_added = NOW()");
 
@@ -23,7 +23,7 @@ class ModelAccountCatalogCoupon extends Model {
 	}
 
 	public function editCoupon($coupon_id, $data) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$this->db->query("UPDATE " . DB_PREFIX . "coupon SET name = '" . $this->db->escape($data['name']) . "', code = '" . $this->db->escape($data['code']) . "', discount = '" . (float)$data['discount'] . "', type = '" . $this->db->escape($data['type']) . "', total = '" . (float)$data['total'] . "', logged = '" . (int)$data['logged'] . "', shipping = '" . (int)$data['shipping'] . "', date_start = '" . $this->db->escape($data['date_start']) . "', date_end = '" . $this->db->escape($data['date_end']) . "', uses_total = '" . (int)$data['uses_total'] . "', uses_customer = '" . (int)$data['uses_customer'] . "', status = '" . (int)$data['status'] . "' WHERE coupon_id = '" . (int)$coupon_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		$this->db->query("DELETE FROM " . DB_PREFIX . "coupon_product WHERE coupon_id = '" . (int)$coupon_id . "'");
@@ -44,7 +44,7 @@ class ModelAccountCatalogCoupon extends Model {
 	}
 
 	public function deleteCoupon($coupon_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$this->db->query("DELETE FROM " . DB_PREFIX . "coupon WHERE coupon_id = '" . (int)$coupon_id . "' AND seller_id = '" . (int)$seller_id . "'");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "coupon_product WHERE coupon_id = '" . (int)$coupon_id . "' AND seller_id = '" . (int)$seller_id . "'");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "coupon_category WHERE coupon_id = '" . (int)$coupon_id . "' AND seller_id = '" . (int)$seller_id . "'");
@@ -52,21 +52,21 @@ class ModelAccountCatalogCoupon extends Model {
 	}
 
 	public function getCoupon($coupon_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "coupon WHERE coupon_id = '" . (int)$coupon_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
 
 	public function getCouponByCode($code) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "coupon WHERE code = '" . $this->db->escape($code) . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
 
 	public function getCoupons($data = array()) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT coupon_id, name, code, discount, date_start, date_end, status FROM " . DB_PREFIX . "coupon WHERE seller_id = '" . (int)$seller_id . "'";
 
 		$sort_data = array(
@@ -132,7 +132,7 @@ class ModelAccountCatalogCoupon extends Model {
 	}
 
 	public function getTotalCoupons() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "coupon WHERE seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];

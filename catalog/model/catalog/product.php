@@ -150,8 +150,12 @@ class ModelCatalogProduct extends Model {
 			$sql .= " AND p.manufacturer_id = '" . (int)$data['filter_manufacturer_id'] . "'";
 		}
                 
-                if (!empty($data['filter_seller_id'])) {
+    	if (!empty($data['filter_seller_id'])) {
 			$sql .= " AND p.seller_id = '" . (int)$data['filter_seller_id'] . "'";
+		}
+
+		if (!empty($data['filter_exclude_products'])) {
+			$sql .= " AND p.product_id NOT IN (" . join(", ", $data['filter_exclude_products']) . ")";
 		}
                 
 		$sql .= " GROUP BY p.product_id";

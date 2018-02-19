@@ -63,8 +63,8 @@ class ControllerModuleAccount extends Controller {
 		$data['transaction'] = $this->url->link('account/transaction', 'token=' . $this->session->data['token'], true);
 		$data['newsletter'] = $this->url->link('account/newsletter', 'token=' . $this->session->data['token'], true);
 		$data['recurring'] = $this->url->link('account/recurring', 'token=' . $this->session->data['token'], true);
-    $seller_id = $this->customer->getId();
-    $data['seller'] = $this->customer->hasSellerPermission($seller_id);
+    $seller_id = $this->customer->getSellerId();
+    $data['seller'] = $this->customer->hasSellerPermission();
     $url = '';
     $data['seller_edit'] = $this->url->link('account/catalog/seller/edit', 'token=' . $this->session->data['token'], true);
     $data['product_form'] = $this->url->link('account/catalog/product',  'token=' . $this->session->data['token'] . $url, true);

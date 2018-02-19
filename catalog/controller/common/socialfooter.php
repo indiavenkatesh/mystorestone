@@ -49,6 +49,9 @@ class ControllerCommonSocialFooter extends Controller {
 		$data['telephone'] = $this->config->get('config_telephone');
 
 		$data['powered'] = sprintf($this->language->get('text_powered'), $this->config->get('config_name'), date('Y', time()));
+
+		$data['is_seller'] = $this->customer->getSellerId();
+		$data['is_seller_paid'] = $this->customer->isSellerPaid();
 		if(isset($this->session->data['customer_id']))
 {
 		$userid = $data['userid'] = $this->session->data['customer_id'];

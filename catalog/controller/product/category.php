@@ -8,6 +8,7 @@ class ControllerProductCategory extends Controller {
 		$this->load->model('catalog/product');
 
 		$this->load->model('tool/image');
+		$this->load->model('account/catalog/seller');
 
 		if (isset($this->request->get['filter'])) {
 			$filter = $this->request->get['filter'];
@@ -244,7 +245,7 @@ class ControllerProductCategory extends Controller {
 				}
 				
 				if($result['seller_id'] != 0){
-					$seller_details = $this->model_catalog_product->getSellers($result['seller_id']);
+					$seller_details = $this->model_account_catalog_seller->getSeller($result['seller_id']);
 				} else {
 					$seller_details = array();
 				}
@@ -447,6 +448,9 @@ class ControllerProductCategory extends Controller {
 			$data['content_bottom'] = $this->load->controller('common/content_bottom');
 			$data['footer'] = $this->load->controller('common/footer');
 			$data['header'] = $this->load->controller('common/header');
+
+			$data['is_seller'] = $this->customer->getSellerId();
+		$data['is_seller_paid'] = $this->customer->isSellerPaid();
 
 			$this->response->setOutput($this->load->view('product/category', $data));
 		} else {

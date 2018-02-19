@@ -1,12 +1,12 @@
 <?php
 class ControllerAccountCatalogTransaction extends Controller {
 public function index() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/transaction', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/transaction', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -21,12 +21,12 @@ public function index() {
 		$this->getList();
 	}
   protected function getList() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/transaction', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/transaction', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -55,7 +55,7 @@ public function index() {
 			'href' => $this->url->link('account/catalog/transaction', 'token=' . $this->session->data['token'] . $url, true)
 		);
     
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 
 		$data['text_no_results'] = $this->language->get('text_no_results');
 		$data['text_balance'] = $this->language->get('text_balance');

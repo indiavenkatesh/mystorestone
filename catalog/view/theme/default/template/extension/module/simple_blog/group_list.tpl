@@ -195,13 +195,6 @@
    <?php } ?>
 <?php } ?>
 
- <script>
-        
-      $('.fancybox').fancybox();
-		
-			
-        
-    </script>
 <script>
 function add_likes(values,type){
 	var urls = 'action=like&article_id='+values;

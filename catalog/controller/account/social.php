@@ -60,8 +60,8 @@ class ControllerAccountSocial extends Controller {
     $data['text_orderlist'] = $this->language->get('text_orderlist');
     $data['text_coupon'] = $this->language->get('text_coupon');
     $url = '';
-    $seller_id = $this->customer->getId();
-    $data['seller'] = $this->customer->hasSellerPermission($seller_id);
+    $seller_id = $this->customer->getSellerId();
+    $data['seller'] = $this->customer->hasSellerPermission();
     $data['seller_edit'] = $this->url->link('account/catalog/seller/edit', 'token=' . $this->session->data['token'] . $url, true);
     $data['product_form'] = $this->url->link('account/catalog/product',  'token=' . $this->session->data['token'] . $url, true);
     $data['product_add'] = $this->url->link('account/catalog/product/add',  'token=' . $this->session->data['token'] . $url, true);

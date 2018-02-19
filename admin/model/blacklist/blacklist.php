@@ -11,8 +11,17 @@ class ModelBlacklistBlacklist extends Model {
 		return $query->num_rows;
 	}
  
-	public function getCustomers() {
-		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "redzone WHERE status = 1 ORDER BY redzone_id DESC  ");
+	public function getCustomers($search = '') {
+		$whereArray = array();
+		$whereText = "1 = 1";
+		if($search != '') {
+			$whereArray[] = "heading LIKE '%".$search."%'";
+			$whereArray[] = "company LIKE '%".$search."%'";
+			$whereArray[] = "frauder LIKE '%".$search."%'";
+			$whereArray[] = "email LIKE '%".$search."%'";
+			$whereText = "(".join(' OR ', $whereArray).")";
+		}
+		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "redzone WHERE ".$whereText." AND status = 1 ORDER BY redzone_id DESC  ");
 		return $query->rows;
 	}
 	public function getCustomer($redzone_id) {

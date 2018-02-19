@@ -368,7 +368,7 @@ class ControllerCatalogProduct extends Controller {
       
       $seller_info = $this->model_seller_seller->getSeller($seller_id);
 
-      $seller_name = $seller_info['firstname'] . '&nbsp;' . $seller_info['lastname'];
+      $seller_name = $seller_info ? $seller_info['firstname'] . ' ' . $seller_info['lastname'] : '';
 
 			$data['products'][] = array(
 				'product_id' => $result['product_id'],

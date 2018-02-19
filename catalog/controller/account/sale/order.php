@@ -3,12 +3,12 @@ class ControllerAccountSaleOrder extends Controller {
 	private $error = array();
 
 	public function index() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -24,12 +24,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	protected function getList() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -345,12 +345,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function info() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order/info', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/sale/order/info', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -942,13 +942,13 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function createInvoiceNo() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
   
 		$this->load->language('account/sale/order');
 
 		$json = array();
 
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		} elseif (isset($this->request->get['order_id'])) {
 			if (isset($this->request->get['order_id'])) {
@@ -973,12 +973,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function addReward() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->load->language('account/sale/order');
 
 		$json = array();
 
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		} else {
 			if (isset($this->request->get['order_id'])) {
@@ -1009,12 +1009,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function removeReward() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->load->language('account/sale/order');
 
 		$json = array();
 
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		} else {
 			if (isset($this->request->get['order_id'])) {
@@ -1041,12 +1041,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function addCommission() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->load->language('account/sale/order');
 
 		$json = array();
 
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		} else {
 			if (isset($this->request->get['order_id'])) {
@@ -1077,12 +1077,12 @@ class ControllerAccountSaleOrder extends Controller {
 	}
 
 	public function removeCommission() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->load->language('account/sale/order');
 
 		$json = array();
 
-		if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		if ($this->customer->hasSellerPermission() == 0) {
 			$json['error'] = $this->language->get('error_permission');
 		} else {
 			if (isset($this->request->get['order_id'])) {

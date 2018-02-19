@@ -20,7 +20,11 @@ class ControllerAccountEdit extends Controller {
 		$this->load->model('account/customer');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
+			$this->load->model('account/catalog/seller');
 			$this->model_account_customer->editCustomer($this->request->post);
+			if($this->customer->getSellerId()) {
+				$this->model_account_catalog_seller->editSeller($this->customer->getSellerId(), $this->request->post, false);
+			}
 
 			$this->session->data['success'] = $this->language->get('text_success');
 

@@ -22,8 +22,16 @@ class ModelSellerSeller extends Model {
 		$this->db->query("DELETE FROM " . DB_PREFIX . "seller_transaction WHERE seller_id = '" . (int)$seller_id . "'");
 	}
 
+	public function getSellerbyCustomer($customer_id) {
+		$query = $this->db->query("SELECT DISTINCT s.*, c.customer_id FROM " . DB_PREFIX . "customer c JOIN " . DB_PREFIX . "seller as s ON s.email = c.email ".
+				"WHERE c.customer_id = '" . (int)$customer_id . "'");
+
+		return $query->row;
+	}
+
 	public function getSeller($seller_id) {
-		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "seller WHERE seller_id = '" . (int)$seller_id . "'");
+		$query = $this->db->query("SELECT DISTINCT s.*, c.customer_id FROM " . DB_PREFIX . "customer c JOIN " . DB_PREFIX . "seller as s ON s.email = c.email ".
+				"WHERE s.seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
@@ -116,7 +124,7 @@ class ModelSellerSeller extends Model {
 
 		if ($seller_info) {
 			$this->db->query("UPDATE " . DB_PREFIX . "seller SET approved = '1' WHERE seller_id = '" . (int)$seller_id . "'");
-      $this->db->query("UPDATE " . DB_PREFIX . "customer SET sellerapprove = '1' WHERE customer_id = '" . (int)$seller_id . "'");
+      		$this->db->query("UPDATE " . DB_PREFIX . "customer SET sellerapprove = '1' WHERE customer_id = '" . (int)$seller_info['customer_id'] . "'");
 
 			$this->load->language('mail/seller');
 

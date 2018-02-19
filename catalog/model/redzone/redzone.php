@@ -8,8 +8,18 @@ class ModelRedzoneRedzone extends Model {
     		return $this->db->getLastId();
 	}
 
-	public function get_redzones(){
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "redzone WHERE approved = 1  AND status = 1 ORDER BY redzone_id DESC ");
+	public function get_redzones($search = ''){
+		$whereArray = array();
+		$whereText = "1 = 1";
+		if($search != '') {
+			$whereArray[] = "heading LIKE '%".$search."%'";
+			$whereArray[] = "company LIKE '%".$search."%'";
+			$whereArray[] = "frauder LIKE '%".$search."%'";
+			$whereArray[] = "email LIKE '%".$search."%'";
+			$whereText = "(".join(' OR ', $whereArray).")";
+		}
+		
+		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "redzone WHERE ".$whereText." AND approved = 1 AND status = 1 ORDER BY redzone_id DESC ");
 		return $query->rows;
 		//echo "<pre>";print_r($query);exit;
 	}

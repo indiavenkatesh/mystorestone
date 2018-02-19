@@ -1,7 +1,7 @@
 <?php
 class ModelSettingSellersetting extends Model {
 	public function getSellersetting($code, $store_id = 0) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$data = array();
 
 		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "seller_setting WHERE store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "' AND `code` = '" . $this->db->escape($code) . "'");
@@ -18,7 +18,7 @@ class ModelSettingSellersetting extends Model {
 	}
   
   public function editSellersetting($code, $data, $store_id = 0) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "seller_setting` WHERE store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "' AND `code` = '" . $this->db->escape($code) . "'");
 
 		foreach ($data as $key => $value) {
@@ -33,12 +33,12 @@ class ModelSettingSellersetting extends Model {
   }
 
 	public function deleteSellersetting($code, $store_id = 0) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->db->query("DELETE FROM " . DB_PREFIX . "seller_setting WHERE store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "' AND `code` = '" . $this->db->escape($code) . "'");
 	}
 	
 	public function getSellersettingValue($key, $store_id = 0) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT value FROM " . DB_PREFIX . "seller_setting WHERE store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "' AND `key` = '" . $this->db->escape($key) . "'");
 
 		if ($query->num_rows) {
@@ -49,7 +49,7 @@ class ModelSettingSellersetting extends Model {
 	}
 	
 	public function editSellersettingValue($code = '', $key = '', $value = '', $store_id = 0) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		if (!is_array($value)) {
 			$this->db->query("UPDATE " . DB_PREFIX . "seller_setting SET `value` = '" . $this->db->escape($value) . "', serialized = '0'  WHERE `code` = '" . $this->db->escape($code) . "' AND `key` = '" . $this->db->escape($key) . "' AND store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "'");
 		} else {

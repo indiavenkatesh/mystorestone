@@ -119,9 +119,9 @@ class ControllerCommonSocialheader extends Controller {
 		$data['transaction'] = $this->url->link('account/transaction', 'token=' . $this->session->data['token'], true);
 		$data['download'] = $this->url->link('account/download', 'token=' . $this->session->data['token'], true);
     $url = '';
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 	$data['username'] = $this->customer->getFirstName();
-    $data['seller'] = $this->customer->hasSellerPermission($seller_id);
+    $data['seller'] = $this->customer->hasSellerPermission();
 	$data['seller_social_site'] = $this->url->link('simple_blog/article', 'token=' . $this->session->data['token'] . $url, true);
     $data['seller_edit'] = $this->url->link('account/catalog/seller/edit', 'token=' . $this->session->data['token'] . $url, true);
     $data['product_form'] = $this->url->link('account/catalog/product',  'token=' . $this->session->data['token'] . $url, true);
@@ -198,6 +198,9 @@ class ControllerCommonSocialheader extends Controller {
 		} else {
 			$data['class'] = 'common-home';
 		}
+
+		$data['is_seller'] = $this->customer->getSellerId();
+		$data['is_seller_paid'] = $this->customer->isSellerPaid();
 
 		return $this->load->view('common/socialheader', $data);
 	}

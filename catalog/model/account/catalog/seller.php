@@ -1,25 +1,81 @@
 <?php
 class ModelAccountCatalogSeller extends Model {
-  	public function editSeller($seller_id, $data) {
+  	public function editSeller($seller_id, $data, $update_customer = true) {
 		if(isset($data['business_nature']) && !empty($data['business_nature'])){
 			$data['business_nature'] = implode(',',$data['business_nature']);
 		} else {
 			$data['business_nature']='';
 		}
 		$data['seller_group_id'] = 1;
-		//$this->db->query("UPDATE " . DB_PREFIX . "seller SET firstname = '" . $this->db->escape($data['firstname']) . "', lastname = '" . $this->db->escape($data['lastname']) . "', logo = '" . $this->db->escape($data['logo']) . "', sellerdescription = '" . $this->db->escape($data['sellerdescription']) . "', email = '" . $this->db->escape($data['email']) . "', telephone = '" . $this->db->escape($data['telephone']) . "', fax = '" . $this->db->escape($data['fax']) . "', company = '" . $this->db->escape($data['company']) . "', website = '" . $this->db->escape($data['website']) . "', address_1 = '" . $this->db->escape($data['address_1']) . "', address_2 = '" . $this->db->escape($data['address_2']) . "', city = '" . $this->db->escape($data['city']) . "', postcode = '" . $this->db->escape($data['postcode']) . "', country_id = '" . (int)$data['country_id'] . "', zone_id = '" . (int)$data['zone_id'] . "', tax = '" . $this->db->escape($data['tax']) . "', payment = '" . $this->db->escape($data['payment']) . "', cheque = '" . $this->db->escape($data['cheque']) . "', paypal = '" . $this->db->escape($data['paypal']) . "', bank_name = '" . $this->db->escape($data['bank_name']) . "', bank_branch_number = '" . $this->db->escape($data['bank_branch_number']) . "', bank_swift_code = '" . $this->db->escape($data['bank_swift_code']) . "', bank_account_name = '" . $this->db->escape($data['bank_account_name']) . "', bank_account_number = '" . $this->db->escape($data['bank_account_number']) . "', status = '" . (int)$data['status'] . "' WHERE seller_id = '" . (int)$seller_id . "'");
-		$this->db->query("UPDATE " . DB_PREFIX . "seller SET seller_group_id = '" . (int)$data['seller_group_id'] . "', firstname = '" . $this->db->escape($data['firstname']) . "', lastname = '" . $this->db->escape($data['lastname']) . "', logo = '" . $this->db->escape($data['logo']) . "', sellerdescription = '" . $this->db->escape($data['sellerdescription']) . "', email = '" . $this->db->escape($data['email']) . "', telephone = '" . $this->db->escape($data['telephone']) . "', fax = '" . $this->db->escape($data['fax']) . "', company = '" . $this->db->escape($data['company']) . "', website = '" . $this->db->escape($data['website']) . "', address_1 = '" . $this->db->escape($data['address_1']) . "', address_2 = '" . $this->db->escape($data['address_2']) . "', city = '" . $this->db->escape($data['city']) . "', postcode = '" . $this->db->escape($data['postcode']) . "', company_nature = '" . $this->db->escape($data['company_nature']) . "', business_nature = '" . $this->db->escape($data['business_nature']) . "', cancelled_cheque = '" . $this->db->escape($data['cancelled_cheque']) . "', bank_statement = '" . $this->db->escape($data['bank_statement']) . "', tin_number = '" . $this->db->escape($data['tin_number']) . "', aadhar_number = '" . $this->db->escape($data['aadhar_number']) . "', aadhar_upload = '" . $this->db->escape($data['aadhar_upload']) . "', proof_upload = '" . $this->db->escape($data['proof_upload']) . "', certificate_upload = '" . $this->db->escape($data['certificate_upload']) . "', country_id = '" . (int)$data['country_id'] . "', zone_id = '" . (int)$data['zone_id'] . "', tax = '" . $this->db->escape($data['tax']) . "', payment = '" . $this->db->escape($data['payment']) . "', cheque = '" . $this->db->escape($data['cheque']) . "', paypal = '" . $this->db->escape($data['paypal']) . "', bank_name = '" . $this->db->escape($data['bank_name']) . "', bank_branch_number = '" . $this->db->escape($data['bank_branch_number']) . "', bank_swift_code = '" . $this->db->escape($data['bank_swift_code']) . "', bank_account_name = '" . $this->db->escape($data['bank_account_name']) . "', bank_account_number = '" . $this->db->escape($data['bank_account_number']) . "', status = '" . (int)$data['status'] . "' WHERE seller_id = '" . (int)$seller_id . "'");
+		$columns = "seller_group_id, firstname, lastname, logo, sellerdescription, email, telephone, fax, company, website, 
+		address_1, address_2, city, postcode, company_nature, business_nature, cancelled_cheque, bank_statement, 
+		tin_number, aadhar_number, aadhar_upload, proof_upload, certificate_upload, country_id, zone_id,
+		tax, payment, cheque, paypal, bank_name, bank_branch_number, bank_swift_code, bank_account_name, bank_account_number, status";
+		$cols = array_map('trim', explode(",", $columns));
+		$integer_fields = array("seller_group_id", "country_id", "zone_id", "status");
+		if(!$seller_id) {
+			$fields = array();
+			$values = array();
+			foreach($cols as $col) {
+				if($this->db->escape($data[$col]) === '') {
+					continue;
+				}
+				$fields[] = "`" . $col . "`";
+				if(in_array($col, $integer_fields)) {
+					$values[] = (int)$this->db->escape($data[$col]);
+				} else {
+					$values[] = "'". $this->db->escape($data[$col]) . "'";
+				}
+			}
+			$this->db->query("INSERT INTO " . DB_PREFIX . "seller "
+				. "(`seller_id`, " . join(", ", $fields) . ") VALUES "
+				. "(NULL, " . join(", ", $values) . ")");
+		} else {
+			$values = array();
+			foreach($cols as $col) {
+				if(in_array($col, $integer_fields)) {
+					$values[] = $col . " = " . (int)$this->db->escape($data[$col]);
+				} else {
+					$values[] = $col . " = " . "'". $this->db->escape($data[$col]) . "'";
+				}
+			}
+			$this->db->query("UPDATE " . DB_PREFIX . "seller SET "
+				. "" . join(", ", $values) . " WHERE seller_id = " . (int)$seller_id);
+		}		
+		if($update_customer) {
+			$cols = array("firstname", "lastname", "email");
+			$values = array();
+			$integer_fields = array();
+			foreach($cols as $col) {
+				if(in_array($col, $integer_fields)) {
+					$values[] = $col . " = " . (int)$this->db->escape($data[$col]);
+				} else {
+					$values[] = $col . " = " . "'". $this->db->escape($data[$col]) . "'";
+				}
+			}
+			$this->db->query("UPDATE " . DB_PREFIX . "customer SET "
+				. "" . join(", ", $values) . " WHERE customer_id = " . (int)$data['customer_id']);
+		}
 	}
   
-  public function getSeller($seller_id) {
-		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "seller WHERE seller_id = '" . (int)$seller_id . "'");
+	public function getSellerbyCustomer($customer_id) {
+		$query = $this->db->query("SELECT DISTINCT s.*, c.customer_id FROM " . DB_PREFIX . "customer c JOIN " . DB_PREFIX . "seller as s ON s.email = c.email ".
+				"WHERE c.customer_id = '" . (int)$customer_id . "'");
+
+		return $query->row;
+	}
+
+	public function getSeller($seller_id) {
+		$query = $this->db->query("SELECT DISTINCT s.*, c.customer_id FROM " . DB_PREFIX . "customer c JOIN " . DB_PREFIX . "seller as s ON s.email = c.email ".
+				"WHERE s.seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
 	
 	public function getPaidSellerDetails($groupIds = array()) {
 		$query = $this->db->query(
-			"SELECT s.* FROM " . DB_PREFIX . "seller as s ".
+			"SELECT s.*, c.customer_id FROM " . DB_PREFIX . "seller as s ".
+			"JOIN " . DB_PREFIX . "customer as c ON c.email = s.email ". 
 			"JOIN " . DB_PREFIX . "social_group_users as sgu ON s.seller_id = sgu.social_group_user_id ".
 			"WHERE status = 1 and is_paid = 1 and approved=1 AND sgu.social_group_id IN (" . JOIN(",", $groupIds) . ")"
 		);

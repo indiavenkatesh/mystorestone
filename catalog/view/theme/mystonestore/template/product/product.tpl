@@ -605,6 +605,13 @@ $(document).ready(function() {
 			enabled:true
 		}
 	});
+  var hash = window.location.hash;
+  if(hash && $(hash).size() > 0) {
+    $("[href='"+hash+"']").trigger('click');
+    $('html, body').animate({
+        scrollTop: $(hash).offset().top
+    }, 1000);
+  }
 });
 //--></script>
 <script type="text/javascript" src="chat/js/catgchat.js"></script>

@@ -11,20 +11,20 @@ class ModelAccountSaleReturn extends Model {
 	}
 
 	public function deleteReturn($return_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$this->db->query("DELETE FROM `" . DB_PREFIX . "return` WHERE return_id = '" . (int)$return_id . "' AND seller_id = '" . (int)$seller_id . "'");
 		$this->db->query("DELETE FROM " . DB_PREFIX . "return_history WHERE return_id = '" . (int)$return_id . "'");
 	}
 
 	public function getReturn($return_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT DISTINCT *, (SELECT CONCAT(c.firstname, ' ', c.lastname) FROM " . DB_PREFIX . "customer c WHERE c.customer_id = r.customer_id) AS customer FROM `" . DB_PREFIX . "return` r WHERE r.return_id = '" . (int)$return_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
 
 	public function getReturns($data = array()) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT *, CONCAT(r.firstname, ' ', r.lastname) AS customer, (SELECT rs.name FROM " . DB_PREFIX . "return_status rs WHERE rs.return_status_id = r.return_status_id AND rs.language_id = '" . (int)$this->config->get('config_language_id') . "') AS status FROM `" . DB_PREFIX . "return` r";
 
 		$implode = array();
@@ -108,7 +108,7 @@ class ModelAccountSaleReturn extends Model {
 	}
 
 	public function getTotalReturns($data = array()) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "return`r";
 
 		$implode = array();
@@ -157,28 +157,28 @@ class ModelAccountSaleReturn extends Model {
 	}
 
 	public function getTotalReturnsByReturnStatusId($return_status_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "return` WHERE return_status_id = '" . (int)$return_status_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function getTotalReturnsByReturnReasonId($return_reason_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "return` WHERE return_reason_id = '" . (int)$return_reason_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function getTotalReturnsByReturnActionId($return_action_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "return` WHERE return_action_id = '" . (int)$return_action_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function addReturnHistory($return_id, $data) {
-    $seller_id = $this->customer->getId(); 
+    $seller_id = $this->customer->getSellerId(); 
 		$this->db->query("UPDATE `" . DB_PREFIX . "return` SET return_status_id = '" . (int)$data['return_status_id'] . "', date_modified = NOW() WHERE return_id = '" . (int)$return_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		$this->db->query("INSERT INTO " . DB_PREFIX . "return_history SET return_id = '" . (int)$return_id . "', return_status_id = '" . (int)$data['return_status_id'] . "', notify = '" . (isset($data['notify']) ? (int)$data['notify'] : 0) . "', comment = '" . $this->db->escape(strip_tags($data['comment'])) . "', date_added = NOW()");

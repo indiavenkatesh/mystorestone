@@ -75,7 +75,8 @@ class ControllerCommonFooter extends Controller {
 
 			$this->model_tool_online->addOnline($ip, $this->customer->getId(), $url, $referer);
 		}
-
+$data['is_seller'] = $this->customer->getSellerId();
+$data['is_seller_paid'] = $this->customer->isSellerPaid();
 if(isset($this->session->data['customer_id']))
 {
 	$this->load->model('simple_blog/groups');

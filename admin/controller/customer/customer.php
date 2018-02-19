@@ -144,9 +144,10 @@ class ControllerCustomerCustomer extends Controller {
 			foreach ($this->request->post['selected'] as $customer_id) {
 				$this->model_customer_customer->deleteCustomer($customer_id);
         $filter_data = array(
-			  'seller_id'	  => $customer_id,
+			  'customer_id'	  => $customer_id,
 		    );
-        $seller_products = $this->model_catalog_product->getSellerProducts($filter_data);
+		$seller_products = $this->model_catalog_product->getSellerProducts($filter_data);
+
     if (isset($seller_products)) { 
      foreach ($seller_products as $seller_product) {
         $product_id = $seller_product['product_id']; 
@@ -281,9 +282,9 @@ class ControllerCustomerCustomer extends Controller {
 		$this->load->model('seller/seller');
 
 		if (isset($this->request->get['customer_id']) && $this->validateApprove()) {
-      $seller_id = $this->request->get['customer_id'];
+			$seller = $this->model_seller_seller->getSellerbyCustomer($this->request->get['customer_id']);
        
-			$this->model_seller_seller->sellerapprove($seller_id);
+			$this->model_seller_seller->sellerapprove($seller['seller_id']);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -935,7 +936,7 @@ class ControllerCustomerCustomer extends Controller {
 		if (isset($this->request->get['customer_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
 			$customer_info = $this->model_customer_customer->getCustomer($this->request->get['customer_id']);
       $this->load->model('seller/seller');
-      $seller_info = $this->model_seller_seller->getSeller($this->request->get['customer_id']);
+      $seller_info = $this->model_seller_seller->getSellerbyCustomer($this->request->get['customer_id']);
 		}
 
 		$this->load->model('customer/customer_group');

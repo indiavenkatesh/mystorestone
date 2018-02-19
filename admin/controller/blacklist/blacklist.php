@@ -101,7 +101,12 @@ class ControllerBlacklistBlacklist extends Controller {
 		$this->load->model('tool/upload');
 
 		$data['blacklists'] = array();
-		$results = $this->model_blacklist_blacklist->getCustomers(); 
+		$data['action'] = $this->url->link('blacklist/blacklist', 'token=' . $this->session->data['token'], true);
+		$data['search_text'] = '';
+		if (($this->request->server['REQUEST_METHOD'] == 'POST') && isset($this->request->post['do_search'])) {
+			$data['search_text'] = $this->request->post['search'];
+		}
+		$results = $this->model_blacklist_blacklist->getCustomers($data['search_text']); 
 		foreach ($results as $key => $result) { 
 			foreach ($countries as $key => $country) {
 				if($result['country']==$country['country_id']){

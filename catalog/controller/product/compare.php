@@ -189,7 +189,22 @@ class ControllerProductCompare extends Controller {
 			$json['total'] = sprintf($this->language->get('text_compare'), (isset($this->session->data['compare']) ? count($this->session->data['compare']) : 0));
 		}
 
+		$json['compare_url'] = $this->url->link('product/compare');
+
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
+	}
+
+	public function search() {
+		$this->load->model('catalog/product');
+		$data = array(); $json = array();
+		if($this->request->post && $this->request->post['search'] != "") {
+			$data['filter_name'] = $this->request->post['search'];
+		}
+		$data['filter_exclude_products'] = array_values($this->session->data['compare']);
+		$data['start'] = 0;$data['limit'] = 5;
+		$json['products'] = array_values($this->model_catalog_product->getProducts($data));	
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));	
 	}
 }

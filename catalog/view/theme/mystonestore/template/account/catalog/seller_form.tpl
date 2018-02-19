@@ -63,7 +63,7 @@
                     <a href="" id="thumb-image" data-toggle="image" class="img-thumbnail"><img src="<?php echo $thumb; ?>" alt="" title="" data-placeholder="<?php echo $placeholder; ?>" /></a><input type="hidden" name="logo" value="<?php echo $logo; ?>" id="input-image" />
                   </div>
                 </div>
-                <div class="form-group required">
+                <?php /** <div class="form-group required">
                   <label class="col-sm-2 control-label" for="input-firstname"><?php echo $entry_firstname; ?></label>
                   <div class="col-sm-10">
                     <input type="text" name="firstname" value="<?php echo $firstname; ?>" placeholder="<?php echo $entry_firstname; ?>" id="input-firstname" class="form-control" />
@@ -80,7 +80,8 @@
                     <div class="text-danger"><?php echo $error_lastname; ?></div>
                     <?php } ?>
                   </div>
-                </div>
+                </div> **/ ?><input type="hidden" name="firstname" value="<?php echo $firstname; ?>" />
+                <input type="hidden" name="lastname" value="<?php echo $lastname; ?>" />
                 <div class="form-group">
                 <label class="col-sm-2 control-label" for="input-sellerdescription"><?php echo $entry_description; ?></label>
                 <div class="col-sm-10">
@@ -89,7 +90,7 @@
                     <div class="text-danger"><?php echo $error_sellerdescription; ?></div>
                     <?php } ?>
                 </div>
-              </div>
+              </div><?php /**
                 <div class="form-group required">
                   <label class="col-sm-2 control-label" for="input-email"><?php echo $entry_email; ?></label>
                   <div class="col-sm-10">
@@ -98,7 +99,7 @@
                     <div class="text-danger"><?php echo $error_email; ?></div>
                     <?php  } ?>
                   </div>
-                </div>
+                </div> **/ ?><input type="hidden" name="email" value="<?php echo $email; ?>" />
                 <div class="form-group required">
                   <label class="col-sm-2 control-label" for="input-telephone"><?php echo $entry_telephone; ?></label>
                   <div class="col-sm-10">
@@ -220,15 +221,8 @@
                   <div class="col-sm-10">
 				  <?php $business_nature = explode(',',$business_nature); ?>
                    <?php foreach($group_lists as $key => $group_list){ ?>
-            <input type="checkbox" name="business_nature[]" value="<?php echo $group_list['name']; ?>"  <?php if (in_array($group_list['name'], $business_nature)){ echo 'checked'; } ?> /> <?php echo $group_list['name']; ?>
+            <input type="checkbox" name="business_nature[]" value="<?php echo $group_list['name']; ?>"  <?php if ($business_nature && in_array($group_list['name'], $business_nature)){ echo 'checked'; } ?> /> <?php echo $group_list['name']; ?>
           <?php } ?>
-          <!-- <input type="checkbox" name="business_nature[]" value="Quarry Owner"  <?php if (in_array("Quarry Owner", $business_nature)){ echo 'checked'; } ?> /> Quarry Owner
-          <input type="checkbox" name="business_nature[]" value="Factory Owner" <?php if (in_array("Factory Owner", $business_nature)){ echo 'checked'; } ?> /> Factory Owner
-          <input type="checkbox" name="business_nature[]" value="Exporter/Importer"  <?php if (in_array("Exporter/Importer", $business_nature)){ echo 'checked'; } ?> /> Exporter/Importer
-          <input type="checkbox" name="business_nature[]" value="Wholesaler/Retailer/Showroom"  <?php if (in_array("Wholesaler/Retailer/Showroom", $business_nature)){ echo 'checked'; } ?> /> Wholesaler/Retailer/Showroom
-          <input type="checkbox" name="business_nature[]" value="Traders"  <?php if (in_array("Traders", $business_nature)){ echo 'checked'; } ?>/> Traders
-          <input type="checkbox" name="business_nature[]" value="Transporters/Logistics"  <?php if (in_array("Transporters/Logistics", $business_nature)){ echo 'checked'; } ?> /> Transporters/Logistics
-          <input type="checkbox" name="business_nature[]" value="Machinery/Industrial Suppliers"   <?php if (in_array("Machinery/Industrial Suppliers", $business_nature)){ echo 'checked'; } ?> /> Machinery/Industrial Suppliers -->
                     <?php if ($error_business_nature) { ?>
                     <div class="text-danger"><?php echo $error_business_nature; ?></div>
                     <?php } ?>

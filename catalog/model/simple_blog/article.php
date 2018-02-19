@@ -627,7 +627,7 @@
 					$text .=  $data['name']. "\n";
 					$subject = 'Post has been spammed';
 					$seller_id = $order_info['author_user_id'];  
-					$seller_info = $this->model_account_catalog_seller->getSeller($seller_id);
+					$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($seller_id);
 			  
 					$mail = new Mail();
 					$mail->protocol = $this->config->get('config_mail_protocol');

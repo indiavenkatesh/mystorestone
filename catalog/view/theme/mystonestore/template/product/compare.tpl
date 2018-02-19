@@ -19,6 +19,45 @@
     <?php $class = 'col-sm-12'; ?>
     <?php } ?>
     <div id="content" class="<?php echo $class; ?>"><?php echo $content_top; ?>
+      <div class="pull-right">
+        <button class="btn btn-primary add_compare_open" title="Add product to compare">+</button>
+        <div id="add_compare">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Add product to compare</h5>
+                <button type="button" class="close add_compare_close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="row my-2">
+                  <div class="col-lg-6 col-sm-6 col-xs-12 table_search">
+                    <form id="add_compare_search" method="post"class="form-horizontal">
+                      <div class="input-group add-on">
+                        <input type="text" class="form-control" name="search" aria-describedby="emailHelp" placeholder="Search" value="">
+
+                        <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <div class="row my-2">
+                  <div class="col-xs-12">
+                    <ul class="list-group" id="compare_products_list">
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary add_compare_close" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>          
+        </div>
+      </div>
       <h1><?php echo $heading_title; ?></h1>
       <?php if ($products) { ?>
       <table class="table table-bordered">
@@ -145,4 +184,56 @@
       <?php echo $content_bottom; ?></div>
     <?php echo $column_right; ?></div>
 </div>
+<script>
+    $(document).ready(function() {
+
+      // Initialize the plugin
+      $('#add_compare').popup({
+        background: false,
+        scrolllock: true,
+        beforeopen: function() {
+          searchProducts('');
+        }
+      });
+
+      $("#add_compare_search").submit(function(e){
+        e.preventDefault();
+        var search_text = this.search.value;
+        searchProducts(search_text);
+      });
+
+      function searchProducts(search_text) {
+        var $parent = $("#compare_products_list");
+        $("#compare_products_list").html('');
+        $("<li />").addClass('list-group-item').html('Loading...').appendTo($parent);
+        $.ajax({
+          url: 'index.php?route=product/compare/search',
+          type: 'post',
+          data: 'search=' + search_text,
+          dataType: 'json',
+          success: function(json) {
+            //var json = $.parseJSON(json);
+            $("#compare_products_list").html('');console.log(json['products']);
+            if(json['products'] && json['products'].length > 0) {
+              for(i=0; i < json['products'].length; i++){
+                var $li = $("<li />").addClass('list-group-item').appendTo($parent);
+                $li.data('product_id', json['products'][i].product_id);
+                $li.click(function(){
+                  $('#add_compare').popup('hide');
+                  compare.add($(this).data('product_id'));
+                }).html(json['products'][i].name.trim());
+              }
+            } else {
+              $("<li />").addClass('list-group-item').html('No products found!').appendTo($parent);
+            }
+          },
+          error: function(xhr, ajaxOptions, thrownError) {
+            $("#compare_products_list").html('');
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+          }
+        });
+      }
+
+    });
+  </script>
 <?php echo $footer; ?>

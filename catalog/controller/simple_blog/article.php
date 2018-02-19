@@ -75,7 +75,7 @@ if (isset($this->request->get['filter_group'])) {
 			
 			$this->load->model('tool/image');
 			$this->load->model('account/catalog/seller');
-			$seller_info = $this->model_account_catalog_seller->getSeller($data['userid']);
+			$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($data['userid']);
 
 			$data['current_seller_info'] = $seller_info;
 
@@ -156,7 +156,7 @@ if (isset($this->request->get['filter_group'])) {
 				$featured_found = '';
 			}
 			
-				$seller_info = $this->model_account_catalog_seller->getSeller($result['author_user_id']);
+				$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($result['author_user_id']);
 
 				if (!empty($seller_info) && is_file(DIR_IMAGE . $seller_info['logo'])) {
 					$thumb = $this->model_tool_image->resize($seller_info['logo'], 50, 50);
@@ -190,7 +190,7 @@ if (isset($this->request->get['filter_group'])) {
 						);
 					}
 					
-					$seller_info = $this->model_account_catalog_seller->getSeller($comments_result['simple_blog_article_reply_id']);
+					$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($comments_result['simple_blog_article_reply_id']);
 
 					if (!empty($seller_info) && is_file(DIR_IMAGE . $seller_info['logo'])) {
 						$cthumb = $this->model_tool_image->resize($seller_info['logo'], 50, 50);
@@ -286,7 +286,10 @@ if (isset($this->request->get['filter_group'])) {
     		$data['content_top'] = $this->load->controller('common/content_top');
     		$data['content_bottom'] = $this->load->controller('common/content_bottom');
     		$data['footer'] = $this->load->controller('common/socialfooter');
-    		$data['header'] = $this->load->controller('common/socialheader');
+			$data['header'] = $this->load->controller('common/socialheader');
+			
+			$data['is_seller'] = $this->customer->getSellerId();
+		$data['is_seller_paid'] = $this->customer->isSellerPaid();
 
 				if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . 'extension/module/simple_blog/article.tpl')) {
     			$this->response->setOutput($this->load->view($this->config->get('config_template') . 'extension/module/simple_blog/article.tpl', $data));
@@ -632,7 +635,7 @@ if (isset($this->request->get['filter_group'])) {
                     );
                 }
 				
-				$seller_info = $this->model_account_catalog_seller->getSeller($result['simple_blog_article_reply_id']);
+				$seller_info = $this->model_account_catalog_seller->getSellerbyCustomer($result['simple_blog_article_reply_id']);
 
 				if (!empty($seller_info) && is_file(DIR_IMAGE . $seller_info['logo'])) {
 					$cthumb = $this->model_tool_image->resize($seller_info['logo'], 50, 50);

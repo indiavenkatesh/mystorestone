@@ -108,8 +108,8 @@ class ControllerCommonHeader extends Controller {
 		$data['transaction'] = $this->url->link('account/transaction', 'token=' . $this->session->data['token'], true);
 		$data['download'] = $this->url->link('account/download', 'token=' . $this->session->data['token'], true);
     $url = '';
-    $seller_id = $this->customer->getId();
-    $data['seller'] = $this->customer->hasSellerPermission($seller_id);
+    $seller_id = $this->customer->getSellerId();
+    $data['seller'] = $this->customer->hasSellerPermission();
     $data['seller_social_site'] = $this->url->link('simple_blog/article', 'token=' . $this->session->data['token'] . $url, true);
     $data['seller_edit'] = $this->url->link('account/catalog/seller/edit', 'token=' . $this->session->data['token'] . $url, true);
     $data['product_form'] = $this->url->link('account/catalog/product',  'token=' . $this->session->data['token'] . $url, true);
@@ -180,8 +180,31 @@ class ControllerCommonHeader extends Controller {
 			}
 
 			$data['class'] = str_replace('/', '-', $this->request->get['route']) . $class;
+			
 		} else {
-			$data['class'] = 'common-home';
+			$data['class'] = 'common-home';			
+		}
+
+		if($data['class'] == 'common-home') {
+			$data['bannerName'] = "Home Top Banner";
+		} else {
+			$data['bannerName'] = "Common Top Banner";
+		}
+
+		$this->load->model('design/banner');
+		$this->load->model('tool/image');
+
+		$results = $this->model_design_banner->getBannerByNamee($data['bannerName']);
+
+		foreach ($results as $result) {
+			echo $this->model_tool_image->resize("image/" . $result['image'], 1350, false);
+			if (is_file(DIR_IMAGE . $result['image'])) {
+				$data['banners'][] = array(
+					'title' => $result['title'],
+					'link'  => $result['link'],
+					'image' => "image/" . $result['image']
+				);
+			}
 		}
 
 		return $this->load->view('common/header', $data);

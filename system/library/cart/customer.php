@@ -2,8 +2,10 @@
 namespace Cart;
 class Customer {
 	private $customer_id;
+	private $seller_id;
+	private $seller_paid;
 	private $firstname;
-	private $lastname;
+	private $lastname;	
 	private $customer_group_id;
 	private $email;
 	private $telephone;
@@ -18,10 +20,13 @@ class Customer {
 		$this->session = $registry->get('session');
 
 		if (isset($this->session->data['customer_id'])) {
-			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE customer_id = '" . (int)$this->session->data['customer_id'] . "' AND status = '1'");
+			$customer_query = $this->db->query("SELECT c.*, s.seller_id, s.is_paid FROM " . DB_PREFIX . "customer as c LEFT JOIN " . DB_PREFIX . "seller as s ON s.email = c.email WHERE customer_id = '" . (int)$this->session->data['customer_id'] . "' AND c.status = '1'");
 
 			if ($customer_query->num_rows) {
+				$this->session->data['seller_id'] = $customer_query->row['seller_id'];
 				$this->customer_id = $customer_query->row['customer_id'];
+				$this->seller_id = $customer_query->row['seller_id'];
+				$this->seller_paid = $customer_query->row['is_paid'];
 				$this->firstname = $customer_query->row['firstname'];
 				$this->lastname = $customer_query->row['lastname'];
 				$this->customer_group_id = $customer_query->row['customer_group_id'];
@@ -31,7 +36,6 @@ class Customer {
 				$this->newsletter = $customer_query->row['newsletter'];
 				$this->address_id = $customer_query->row['address_id'];
         $this->sellerapprove = $customer_query->row['sellerapprove'];
-
 				$this->db->query("UPDATE " . DB_PREFIX . "customer SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE customer_id = '" . (int)$this->customer_id . "'");
 
 				$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer_ip WHERE customer_id = '" . (int)$this->session->data['customer_id'] . "' AND ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "'");
@@ -47,14 +51,17 @@ class Customer {
 
 	public function login($email, $password, $override = false) {
 		if ($override) {
-			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND status = '1'");
+			$customer_query = $this->db->query("SELECT c.*, s.seller_id FROM " . DB_PREFIX . "customer as c LEFT JOIN " . DB_PREFIX . "seller as s ON s.email = c.email WHERE LOWER(c.email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND c.status = '1'");
 		} else {
-			$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE LOWER(email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND status = '1' AND approved = '1'");
+			$customer_query = $this->db->query("SELECT c.*, s.seller_id, s.is_paid FROM " . DB_PREFIX . "customer as c LEFT JOIN " . DB_PREFIX . "seller as s ON s.email = c.email WHERE LOWER(c.email) = '" . $this->db->escape(utf8_strtolower($email)) . "' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND c.status = '1' AND c.approved = '1'");
 		}
 
 		if ($customer_query->num_rows) {
 			$this->session->data['customer_id'] = $customer_query->row['customer_id'];
+			$this->session->data['seller_id'] = $customer_query->row['seller_id'];
 
+			$this->seller_id = $customer_query->row['seller_id'];
+			$this->seller_paid = $customer_query->row['is_paid'];
 			$this->customer_id = $customer_query->row['customer_id'];
 			$this->firstname = $customer_query->row['firstname'];
 			$this->lastname = $customer_query->row['lastname'];
@@ -75,8 +82,11 @@ class Customer {
 
 	public function logout() {
 		unset($this->session->data['customer_id']);
+		unset($this->session->data['seller_id']);
 
 		$this->customer_id = '';
+		$this->seller_id = '';
+		$this->seller_paid = '';
 		$this->firstname = '';
 		$this->lastname = '';
 		$this->customer_group_id = '';
@@ -93,6 +103,14 @@ class Customer {
 
 	public function getId() {
 		return $this->customer_id;
+	}
+
+	public function getSellerId() {
+		return $this->seller_id;
+	}
+
+	public function isSellerPaid() {
+		return $this->seller_paid == 1;
 	}
 
 	public function getFirstName() {

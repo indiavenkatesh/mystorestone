@@ -132,9 +132,9 @@
             <li id="mygroup_list" class="dropdown">
 				<a 
 				<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>
-				href="index.php?route=redzone/redzone" 
+				href="index.php?route=redzone/redzone"
 				<?php } else { ?>
-				href="index.php?route=redzone/redzone" 
+				href="#paidtocontinue" class="fancybox"
 				<?php } ?>
                 role="button" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">Blacklist sellers <?php if($new_blacklist!=0){ ?><span style="background: #961112;padding: 1px 8px;color: #fff;border-radius: 100%;font-size: 13px;font-weight: bold;"><?php echo $new_blacklist; ?></span><?php } ?></a>
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><img src="catalog/view/theme/mystonestore/img/icons/group.png">My Groups</a>
@@ -715,31 +715,9 @@ if(!empty($check_availability) && isset($current_seller_info) && isset($current_
    <?php } ?>
 <?php } ?>
 
-<a href="#paidtocontinue" class="fancybox" id="openpaidtocontinue"></a>
-		<div class="well read_more_section" id="paidtocontinue">
-			<div class="pop_well">			  
-			 <div class="row">
-						<div class="user_db col-sm-2 col-lg-2">
-						   <img src="<?php echo $thumb;?>" />
-						</div>		
-						<div class="user_name col-sm-10 col-lg-10">
-						  <h4>Access denied!</h4>
-						</div>
-						<div class="user_content col-sm-12 col-lg-12">
-							<p>&nbsp;</p>
-							<p>Paid members only able to access this action. Please contact administrator to procedd further.</p>							
-						</div>
-					</div>	   
-			</div>
-		</div>
 
- <script>
-        
-      $('.fancybox').fancybox();
-		
-			
-        
-    </script>
+
+
 <script>
 function add_likes(values,type){
 	<?php if(isset($current_seller_info) && isset($current_seller_info['is_paid']) && $current_seller_info['is_paid'] == 1) { ?>

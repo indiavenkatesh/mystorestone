@@ -341,6 +341,14 @@ class ModelCatalogProduct extends Model {
 	}
 
   public function getSellerProducts($data = array()) {
+	  if(isset($data['customer_id'])) {
+		$query = $this->db->query("SELECT s.seller_id FROM " . DB_PREFIX . "seller s JOIN " . DB_PREFIX . "customer c ON c.email = s.email where c.customer_id = '" . (int)$data['customer_id'] . "' ");
+		if($query->row) {
+			$data['seller_id'] = $query->row['seller_id'];
+		} else {
+			return array();
+		}
+	  }
 		$sql = "SELECT * FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND seller_id = '" . (int)$data['seller_id'] . "'";
 
 		if (!empty($data['filter_name'])) {

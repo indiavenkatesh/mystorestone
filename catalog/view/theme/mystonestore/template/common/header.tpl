@@ -23,7 +23,9 @@
 <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
 <link href="catalog/view/theme/mystonestore/css/style.css" rel="stylesheet" /> 
 <link href="catalog/view/theme/mystonestore/css/estyle.css" rel="stylesheet" /> 
+<link href="catalog/view/theme/mystonestore/css/jquery.fancybox.css" rel="stylesheet"> 
 <script src="catalog/view/theme/mystonestore/js/jquery.js"></script>
+<script src="catalog/view/theme/mystonestore/js/jquery.fancybox.js"></script>
 <script src="catalog/view/theme/mystonestore/js/jquery.bxslider.min.js"></script>
 <script type="text/javascript" src="catalog/view/theme/mystonestore/js/bootstrap.min.js"></script>
 <script src="catalog/view/theme/mystonestore/js/jquery.popupoverlay.js"></script>
@@ -40,6 +42,8 @@
 <?php foreach ($analytics as $analytic) { ?>
 <?php echo $analytic; ?>
 <?php } ?>
+
+<link rel="stylesheet" type="text/css" href="catalog/view/theme/mystonestore/stylesheet/flags.css" />
 </head>
 <body class="<?php echo $class; ?>">
 
@@ -85,6 +89,7 @@
 			<li><a href="<?php echo $login; ?>">Buyer Login</a></li>
 			<li><a href="index.php?route=simple_blog/article">Seller Login</a> </li>
 			<?php } ?>
+            <li class="cart_currency"><?php echo $currency; ?></li>
 			<li class="cart_header"><?php echo $cart; ?></li>
 
 
@@ -95,11 +100,15 @@
 </header><?php if($class == 'common-home'){ ?>
 
 <div class="banner">
-<div class="bxslider">
-  <div><img src="catalog/view/theme/mystonestore/img/granite_warehouse.jpg"></div>
-  <div><img src="catalog/view/theme/mystonestore/img/slide2.png"></div>
-  <div><img src="catalog/view/theme/mystonestore/img/slide3.png"></div>
-</div>
+ <?php if(count($banners) > 1) { ?>
+<div class="bxslider"> <div>
+<?php } ?>
+<?php foreach($banners as $banner) { ?>
+ <img src="<?php echo $banner['image']; ?>">
+<?php } ?>
+ <?php if(count($banners) > 1) { ?>
+</div></div>
+<?php } ?>
 
 
 
@@ -117,7 +126,15 @@
  </div>
  <?php } else { ?>
  <div class="banner_inner">
- <img src="catalog/view/theme/mystonestore/img/main2.jpg">  
+ <?php if(count($banners) > 1) { ?>
+<div class="bxslider"><div>
+<?php } ?>
+<?php foreach($banners as $banner) { ?>
+  <img src="<?php echo $banner['image']; ?>">
+<?php } ?>
+ <?php if(count($banners) > 1) { ?>
+</div></div>
+<?php } ?>
  <div class="product_inner">     
  <?php if($class=='product-category-20'){?>    
  <div class="container">          

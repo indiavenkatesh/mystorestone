@@ -3,12 +3,12 @@ class ControllerAccountCatalogSeller extends Controller {
 	private $error = array();
   
    	public function edit() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/seller', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/seller', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -19,9 +19,14 @@ class ControllerAccountCatalogSeller extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
 
 		$this->load->model('account/catalog/seller');
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
-			$this->model_account_catalog_seller->editSeller($seller_id, $this->request->post);
+			$data = $this->request->post;
+			$data['firstname'] = $this->customer->getFirstName();
+			$data['lastname'] = $this->customer->getLastName();
+			$data['email'] = $this->customer->getEmail();
+			$data['customer_id'] = $this->customer->getId();
+			$this->model_account_catalog_seller->editSeller($seller_id, $data);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -34,7 +39,7 @@ class ControllerAccountCatalogSeller extends Controller {
 	}
   
   	protected function getForm() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$data['heading_title'] = $this->language->get('heading_title');
 
 		$data['text_form'] = !isset($this->request->get['seller_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
@@ -94,7 +99,7 @@ class ControllerAccountCatalogSeller extends Controller {
 			$data['error_warning'] = '';
 		}
 
-		if (isset($this->error['firstname'])) {
+		/**if (isset($this->error['firstname'])) {
 			$data['error_firstname'] = $this->error['firstname'];
 		} else {
 			$data['error_firstname'] = '';
@@ -104,7 +109,7 @@ class ControllerAccountCatalogSeller extends Controller {
 			$data['error_lastname'] = $this->error['lastname'];
 		} else {
 			$data['error_lastname'] = '';
-		}
+		}**/
                 
                 if (isset($this->error['sellerdescription'])) {
 			$data['error_sellerdescription'] = $this->error['sellerdescription'];
@@ -112,11 +117,11 @@ class ControllerAccountCatalogSeller extends Controller {
 			$data['error_sellerdescription'] = '';
 		}
                 
-		if (isset($this->error['email'])) {
+		/**if (isset($this->error['email'])) {
 			$data['error_email'] = $this->error['email'];
 		} else {
 			$data['error_email'] = '';
-		}
+		}**/
 		
 		if (isset($this->error['company_nature'])) {
 			$data['error_company_nature'] = $this->error['company_nature'];
@@ -536,6 +541,8 @@ class ControllerAccountCatalogSeller extends Controller {
                 $this->load->model('simple_blog/groups');
 		$data['group_lists'] = $this->model_simple_blog_groups->getAllgroupsReg();
 
+		$data['customer_id'] = $this->customer->getId();
+
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
 		$data['content_top'] = $this->load->controller('common/content_top');
@@ -547,26 +554,26 @@ class ControllerAccountCatalogSeller extends Controller {
 	}
 
   protected function validateForm() {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		/*if (!$this->user->hasPermission('modify', 'marketing/affiliate')) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}*/
 
-		if ((utf8_strlen(trim($this->request->post['firstname'])) < 1) || (utf8_strlen(trim($this->request->post['firstname'])) > 32)) {
+		/**if ((utf8_strlen(trim($this->request->post['firstname'])) < 1) || (utf8_strlen(trim($this->request->post['firstname'])) > 32)) {
 			$this->error['firstname'] = $this->language->get('error_firstname');
 		}
 
 		if ((utf8_strlen(trim($this->request->post['lastname'])) < 1) || (utf8_strlen(trim($this->request->post['lastname'])) > 32)) {
 			$this->error['lastname'] = $this->language->get('error_lastname');
-		}
+		}**/
                 
                 if (utf8_strlen(trim($this->request->post['sellerdescription'])) > 500) {
 			$this->error['sellerdescription'] = $this->language->get('error_sellerdescription');
 		}
                 
-		if ((utf8_strlen($this->request->post['email']) > 96) || (!filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL))) {
+		/**if ((utf8_strlen($this->request->post['email']) > 96) || (!filter_var($this->request->post['email'], FILTER_VALIDATE_EMAIL))) {
 			$this->error['email'] = $this->language->get('error_email');
-		}
+		}**/
 
 		if ($this->request->post['payment'] == 'cheque') {
 			if ($this->request->post['cheque'] == '') {
@@ -638,7 +645,7 @@ class ControllerAccountCatalogSeller extends Controller {
 
 		$this->load->model('account/catalog/seller');
 
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 
 		$data['text_no_results'] = $this->language->get('text_no_results');
 		$data['text_balance'] = $this->language->get('text_balance');

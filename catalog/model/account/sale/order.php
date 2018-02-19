@@ -1,7 +1,7 @@
 <?php
 class ModelAccountSaleOrder extends Model {
 	public function getOrder($order_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$order_query = $this->db->query("SELECT *, (SELECT CONCAT(c.firstname, ' ', c.lastname) FROM " . DB_PREFIX . "customer c WHERE c.customer_id = o.customer_id) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS order_status FROM `" . DB_PREFIX . "order` o WHERE o.order_id = '" . (int)$order_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		if ($order_query->num_rows) {
@@ -156,7 +156,7 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getOrders($data = array()) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT o.order_id, CONCAT(o.firstname, ' ', o.lastname) AS customer, (SELECT os.name FROM " . DB_PREFIX . "order_status os WHERE os.order_status_id = o.order_status_id AND os.language_id = '" . (int)$this->config->get('config_language_id') . "') AS order_status, o.shipping_code, o.total, o.currency_code, o.currency_value, o.date_added, o.date_modified FROM `" . DB_PREFIX . "order` o";
 
 		if (isset($data['filter_order_status'])) {
@@ -264,7 +264,7 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getTotalOrders($data = array()) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order`";
 
 		if (isset($data['filter_order_status'])) {
@@ -309,21 +309,21 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getTotalOrdersByStoreId($store_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order` WHERE store_id = '" . (int)$store_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function getTotalOrdersByOrderStatusId($order_status_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order` WHERE order_status_id = '" . (int)$order_status_id . "' AND order_status_id > '0' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function getTotalOrdersByProcessingStatus() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$implode = array();
 
 		$order_statuses = $this->config->get('config_processing_status');
@@ -342,7 +342,7 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getTotalOrdersByCompleteStatus() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$implode = array();
 
 		$order_statuses = $this->config->get('config_complete_status');
@@ -361,21 +361,21 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getTotalOrdersByLanguageId($language_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order` WHERE language_id = '" . (int)$language_id . "' AND order_status_id > '0' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function getTotalOrdersByCurrencyId($currency_id) {
-    $seller_id = $this->customer->getId(); 
+    $seller_id = $this->customer->getSellerId(); 
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "order` WHERE currency_id = '" . (int)$currency_id . "' AND order_status_id > '0' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];
 	}
 
 	public function createInvoiceNo($order_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$order_info = $this->getOrder($order_id);
 
 		if ($order_info && !$order_info['invoice_no']) {
@@ -420,7 +420,7 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getEmailsByProductsOrdered($products, $start, $end) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$implode = array();
 
 		foreach ($products as $product_id) {
@@ -433,7 +433,7 @@ class ModelAccountSaleOrder extends Model {
 	}
 
 	public function getTotalEmailsByProductsOrdered($products) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$implode = array();
 
 		foreach ($products as $product_id) {

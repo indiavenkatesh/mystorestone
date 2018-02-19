@@ -317,6 +317,8 @@ var compare = {
 					$('#compare-total').html(json['total']);
 
 					$('html, body').animate({ scrollTop: 0 }, 'slow');
+
+					window.location.href = json['compare_url'];
 				}
 			},
 			error: function(xhr, ajaxOptions, thrownError) {

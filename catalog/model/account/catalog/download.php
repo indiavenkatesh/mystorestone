@@ -1,7 +1,7 @@
 <?php
 class ModelAccountCatalogDownload extends Model {
 	public function addDownload($data) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$this->db->query("INSERT INTO " . DB_PREFIX . "download SET filename = '" . $this->db->escape($data['filename']) . "', seller_id = '" . (int)$seller_id . "', mask = '" . $this->db->escape($data['mask']) . "', date_added = NOW()");
 
 		$download_id = $this->db->getLastId();
@@ -14,7 +14,7 @@ class ModelAccountCatalogDownload extends Model {
 	}
 
 	public function editDownload($download_id, $data) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$this->db->query("UPDATE " . DB_PREFIX . "download SET filename = '" . $this->db->escape($data['filename']) . "', mask = '" . $this->db->escape($data['mask']) . "' WHERE download_id = '" . (int)$download_id . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		$this->db->query("DELETE FROM " . DB_PREFIX . "download_description WHERE download_id = '" . (int)$download_id . "'");
@@ -30,14 +30,14 @@ class ModelAccountCatalogDownload extends Model {
 	}
 
 	public function getDownload($download_id) {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "download d LEFT JOIN " . DB_PREFIX . "download_description dd ON (d.download_id = dd.download_id) WHERE d.download_id = '" . (int)$download_id . "' AND dd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row;
 	}
 
 	public function getDownloads($data = array()) {
-  $seller_id = $this->customer->getId();
+  $seller_id = $this->customer->getSellerId();
 		$sql = "SELECT * FROM " . DB_PREFIX . "download d LEFT JOIN " . DB_PREFIX . "download_description dd ON (d.download_id = dd.download_id) WHERE dd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND seller_id = '" . (int)$seller_id . "'";
 
 		if (!empty($data['filter_name'])) {
@@ -91,7 +91,7 @@ class ModelAccountCatalogDownload extends Model {
 	}
 
 	public function getTotalDownloads() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
 		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "download WHERE seller_id = '" . (int)$seller_id . "'");
 
 		return $query->row['total'];

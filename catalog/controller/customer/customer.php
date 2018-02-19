@@ -935,7 +935,7 @@ class ControllerCustomerCustomer extends Controller {
 		if (isset($this->request->get['customer_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
 			$customer_info = $this->model_customer_customer->getCustomer($this->request->get['customer_id']);
       $this->load->model('seller/seller');
-      $seller_info = $this->model_seller_seller->getSeller($this->request->get['customer_id']);
+      $seller_info = $this->model_seller_seller->getSellerbyCustomer($this->request->get['customer_id']);
 		}
 
 		$this->load->model('customer/customer_group');

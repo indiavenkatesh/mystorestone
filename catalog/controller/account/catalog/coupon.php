@@ -3,12 +3,12 @@ class ControllerAccountCatalogCoupon extends Controller {
 	private $error = array();
 
 	public function index() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -23,12 +23,12 @@ class ControllerAccountCatalogCoupon extends Controller {
 	}
 
 	public function add() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/add', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/add', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -65,12 +65,12 @@ class ControllerAccountCatalogCoupon extends Controller {
 	}
 
 	public function edit() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/edit', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/edit', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -107,12 +107,12 @@ class ControllerAccountCatalogCoupon extends Controller {
 	}
 
 	public function delete() {
-    $seller_id = $this->customer->getId();
+    $seller_id = $this->customer->getSellerId();
     if (!$this->customer->isLogged()) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/delete', '', true);
 
 			$this->response->redirect($this->url->link('account/login', '', true));
-		} else if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		} else if ($this->customer->hasSellerPermission() == 0) {
 			$this->session->data['redirect'] = $this->url->link('account/catalog/coupon/delete', 'token=' . $this->session->data['token'], true);
 
 			$this->response->redirect($this->url->link('account/account', 'token=' . $this->session->data['token'], true));
@@ -585,8 +585,8 @@ class ControllerAccountCatalogCoupon extends Controller {
 	}
 
 	protected function validateForm() {
-		$seller_id = $this->customer->getId();
-    if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		$seller_id = $this->customer->getSellerId();
+    if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 
@@ -612,8 +612,8 @@ class ControllerAccountCatalogCoupon extends Controller {
 	}
 
 	protected function validateDelete() {
-		$seller_id = $this->customer->getId();
-                if ($this->customer->hasSellerPermission($seller_id) == 0) {
+		$seller_id = $this->customer->getSellerId();
+                if ($this->customer->hasSellerPermission() == 0) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 

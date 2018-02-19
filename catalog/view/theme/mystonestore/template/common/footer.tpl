@@ -202,6 +202,20 @@
 
 <?php } ?>
 
+<a href="#paidtocontinue" class="fancybox" id="openpaidtocontinue"></a>
+		<div class="well read_more_section" id="paidtocontinue">
+			<div class="pop_well">			  
+			 <div class="row">
+						<div class="user_name col-sm-12">
+						  <h4>Access denied!</h4>
+						</div>
+						<div class="user_content col-sm-12">
+							<p>&nbsp;</p>
+							<p>Paid members only able to access this action. Please contact administrator to procedd further.</p>							
+						</div>
+					</div>	   
+			</div>
+		</div>
 
 <script src="http://yourjavascript.com/13912425571/jquery-bxslider-min.js"></script>
 
@@ -265,7 +279,13 @@
 		});
 	});
 </script>
-
+ <script>
+        
+      $('.fancybox').fancybox();
+		
+			
+        
+    </script>
 <?php if(isset($userid)) { ?>
 <div id="chatbox_friends" class="chatbox" style="bottom: 0px; right: 20px; display: block;">
 <div class="chatboxhead" onclick="javascript:toggleChatBoxGrowth('friends')">
@@ -287,8 +307,12 @@
 					<?php if($group_lists_member['social_group_user_id']!=$userid){ ?>
 					<li>
 					<img class="profile-picture" src="http://placehold.it/50/55C1E7/fff&text=<?php echo substr($group_lists_member['username'],0,2);?>">
-					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $group_lists_member['social_group_user_id'];?>','<?php echo $group_lists_member['username'];?>')"><?php echo $group_lists_member['username'];?></a>
+					<?php if(!$is_seller || $is_seller_paid) { ?>
 					<div class="profile-status offline seller_status_<?php echo $group_lists_member['social_group_user_id'];?>" data-seller_id="<?php echo $group_lists_member['social_group_user_id'];?>"></div>
+					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $group_lists_member['social_group_user_id'];?>','<?php echo $group_lists_member['username'];?>')"><?php echo $group_lists_member['username'];?></a>
+					<?php } else { ?>
+					<a class="fancybox" href="#paidtocontinue"><?php echo $group_lists_member['username'];?></a>
+					<?php } ?>
 					</li>
 					<?php } ?>
 					<?php } ?>

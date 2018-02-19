@@ -113,7 +113,12 @@
 				if(!empty($users_lists)){ 
 				foreach($users_lists as $users_lists_row){?>
 				<li><img class="profile-picture" src="http://placehold.it/50/55C1E7/fff&text=<?php echo substr($users_lists_row['firstname'],0,2);?>">
-					<a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $users_lists_row['customer_id'];?>','<?php echo $users_lists_row['firstname'];?>')"><?php echo $users_lists_row['firstname'];?></a></li>
+				<?php if(!$is_seller || $is_seller_paid) { ?>
+                <a href="javascript:void(0)" onclick="javascript:chatWith('<?php echo $users_lists_row['customer_id'];?>','<?php echo $users_lists_row['firstname'];?>')"
+                <?php } else { ?>
+                <a href="#paidtocontinue" class="fancybox" 
+                <?php } ?>
+                ><?php echo $users_lists_row['firstname'];?></a></li>
 				<li role="separator" class="divider"></li>
 				<?php } }else{ ?>
 					<li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No User Online  </li>

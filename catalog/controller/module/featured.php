@@ -12,6 +12,7 @@ class ControllerModuleFeatured extends Controller {
 		$data['button_compare'] = $this->language->get('button_compare');
 
 		$this->load->model('catalog/product');
+		$this->load->model('account/catalog/seller');
 
 		$this->load->model('tool/image');
 
@@ -64,7 +65,7 @@ class ControllerModuleFeatured extends Controller {
 					}
 					
 					if($product_info['seller_id'] != 0){
-						$seller_details = $this->model_catalog_product->getSellers($product_info['seller_id']);
+						$seller_details = $this->model_account_catalog_seller->getSeller($product_info['seller_id']);
 					} else {
 						$seller_details = array();
 					}
@@ -99,6 +100,11 @@ class ControllerModuleFeatured extends Controller {
 				}
 			}
 		}
+
+
+
+		$data['is_seller'] = $this->customer->getSellerId();
+		$data['is_seller_paid'] = $this->customer->isSellerPaid();
 
 		if ($data['products']) {
 			return $this->load->view('module/featured', $data);

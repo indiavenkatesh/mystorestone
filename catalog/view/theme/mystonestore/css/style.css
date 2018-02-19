@@ -1055,8 +1055,18 @@
       background: #97c350 none repeat scroll 0 0; 
       color: #fff;}
   .navbar-nav > li.cart_header {
-      margin-left: 30px;
+      margin-left: 15px;
   }
+  .navbar-nav > li.cart_currency {
+    margin-top: 24px;
+}
+.navbar-nav > li.cart_currency .fa {
+    color: #961112;
+}
+.navbar-nav > li ul.dropdown-menu .btn {
+    color: #fff;
+    text-align: left;
+}
   li.cart_header button.btn.btn-lg.btn-block {
       background: #961112 none repeat scroll 0 0;
       color: #fff;
@@ -1451,5 +1461,5 @@ li.cart_header button.btn.btn-lg.btn-block{float: none;}
 .mr-0 {margin-right: 0;}.mr-1 {margin-right: 1em;}.mr-2 {margin-right: 2em;}.mr-3 {margin-right: 3em;}.mr-4 {margin-right: 4em;}.mr-5 {margin-right: 5em;}
 .mt-0 {margin-top: 0;}.mt-1 {margin-top: 1em;}.mt-2 {margin-top: 2em;}.mt-3 {margin-top: 3em;}.mt-4 {margin-top: 4em;}.mt-5 {margin-top: 5em;}
 .mb-0 {margin-bottom: 0;}.mb-1 {margin-bottom: 1em;}.mb-2 {margin-bottom: 2em;}.mb-3 {margin-bottom: 3em;}.mb-4 {margin-bottom: 4em;}.mb-5 {margin-bottom: 5em;}
-.mx-0 {margin-left: 0;margin-right: 0;}.ml-1 {margin-left: 1em;margin-right: 1em;}.ml-2 {margin-left: 2em;margin-right: 2em;}.ml-3 {margin-left: 3em;margin-right: 3em;}.ml-4 {margin-left: 4em;margin-right: 4em;}.ml-5 {margin-left: 5em;margin-right: 5em;}
-.my-0 {margin-top: 0;margin-bottom: 0;}.ml-1 {margin-top: 1em;margin-bottom: 1em;}.ml-2 {margin-top: 2em;margin-bottom: 2em;}.ml-3 {margin-top: 3em;margin-bottom: 3em;}.ml-4 {margin-top: 4em;margin-bottom: 4em;}.ml-5 {margin-top: 5em;margin-bottom: 5em;}
+.mx-0 {margin-left: 0;margin-right: 0;}.mx-1 {margin-left: 1em;margin-right: 1em;}.mx-2 {margin-left: 2em;margin-right: 2em;}.mx-3 {margin-left: 3em;margin-right: 3em;}.mx-4 {margin-left: 4em;margin-right: 4em;}.mx-5 {margin-left: 5em;margin-right: 5em;}
+.my-0 {margin-top: 0;margin-bottom: 0;}.my-1 {margin-top: 1em;margin-bottom: 1em;}.my-2 {margin-top: 2em;margin-bottom: 2em;}.my-3 {margin-top: 3em;margin-bottom: 3em;}.my-4 {margin-top: 4em;margin-bottom: 4em;}.my-5 {margin-top: 5em;margin-bottom: 5em;}
